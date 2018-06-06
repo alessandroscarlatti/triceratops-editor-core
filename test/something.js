@@ -1,12 +1,5 @@
 const stuff = {
-    "things": [
-        "what",
-        "do",
-        "you",
-        "know"
-    ]
+    things: "asdf"
 };
 
-module.exports = {
-  stuff
-};
+exports.default = stuff;

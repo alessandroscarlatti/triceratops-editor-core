@@ -4,7 +4,7 @@
   "description": "core structures for triceratops editor",
   "main": "index.js",
   "scripts": {
-    "test": "mocha test/"
+    "test": "mocha -u tdd test/"
   },
   "author": "",
   "license": "ISC",

@@ -1,5 +1,5 @@
-import AbstractInternalCommand from "../AbstractInternalCommand";
-import ValueController from "../../controller/ValueController";
+const AbstractInternalCommand = require("../AbstractInternalCommand").default;
+const ValueController = require("../../controller/ValueController").default;
 
 /**
  * A PUT_VALUE command is a one-way operation.

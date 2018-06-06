@@ -3,7 +3,7 @@
  * translates it into an EditorCommand.
  */
 
-import EditorCommand from "../commands/model/EditorCommand";
+const EditorCommand = require("../commands/model/EditorCommand").default;
 
 class CommandManager {
     constructor(editorContext) {

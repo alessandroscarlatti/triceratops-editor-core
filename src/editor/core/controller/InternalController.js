@@ -1,4 +1,4 @@
-import applyListenableAttributes from "../aspects/ListenableComponentAttributes";
+const applyListenableAttributes = require("../aspects/ListenableComponentAttributes").default;
 
 /**
  * This is the controller that will receive requests and commands

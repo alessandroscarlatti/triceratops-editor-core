@@ -1,5 +1,5 @@
-import AbstractCommand from "../AbstractInternalCommand";
-import {IllegalStateException} from "../../../../exceptions/Exceptions";
+const AbstractCommand = require("../AbstractInternalCommand").default;
+const IllegalStateException = require("../../exceptions/Exceptions").IllegalStateException;
 
 class IsUndoAvailableCommand extends AbstractCommand {
 

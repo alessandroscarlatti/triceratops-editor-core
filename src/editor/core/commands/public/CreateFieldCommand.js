@@ -1,4 +1,4 @@
-import AbstractCommand from "../AbstractInternalCommand";
+const AbstractCommand = require("../AbstractInternalCommand").default;
 
 class CreateFieldCommand extends AbstractCommand {
 

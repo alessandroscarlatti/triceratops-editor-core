@@ -1,19 +1,19 @@
-import ExternalController from "./controller/ExternalController";
-import HistoryManager from "./components/HistoryManager";
-import CommandFactory from "./components/InternalCommandFactory";
-import GetUndoStackCommand from "./commands/public/GetUndoStackCommand";
-import GetRedoStackCommand from "./commands/public/GetRedoStackCommand";
-import UndoCommand from "./commands/public/UndoCommand";
-import CreateFieldCommand from "./commands/public/CreateFieldCommand";
-import IsUndoAvailableCommand from "./commands/public/IsUndoAvailableCommand";
-import IsRedoAvailableCommand from "./commands/public/IsRedoAvailableCommand";
-import RedoCommand from "./commands/public/RedoCommand";
-import InternalController from "./controller/InternalController";
-import GetStructureCommand from "./commands/public/GetStructureCommand";
-import ListenableComponentRegistry from "./components/ListenableComponentRegistry";
-import RegisterListenerCommand from "./commands/public/RegisterListenerCommand";
-import UnregisterListenerCommand from "./commands/public/UnregisterListenerCommand";
-import ControllerLookupTable from "./ControllerLookupTable";
+const ExternalController = require("./controller/ExternalController").default;
+const HistoryManager = require("./components/HistoryManager").default;
+const CommandFactory = require("./components/InternalCommandFactory").default;
+const GetUndoStackCommand = require("./commands/public/GetUndoStackCommand").default;
+const GetRedoStackCommand = require("./commands/public/GetRedoStackCommand").default;
+const UndoCommand = require("./commands/public/UndoCommand").default;
+const CreateFieldCommand = require("./commands/public/CreateFieldCommand").default;
+const IsUndoAvailableCommand = require("./commands/public/IsUndoAvailableCommand").default;
+const IsRedoAvailableCommand = require("./commands/public/IsRedoAvailableCommand").default;
+const RedoCommand = require("./commands/public/RedoCommand").default;
+const InternalController = require("./controller/InternalController").default;
+const GetStructureCommand = require("./commands/public/GetStructureCommand").default;
+const ListenableComponentRegistry = require("./components/ListenableComponentRegistry").default;
+const RegisterListenerCommand = require("./commands/public/RegisterListenerCommand").default;
+const UnregisterListenerCommand = require("./commands/public/UnregisterListenerCommand").default;
+const ControllerLookupTable = require("./ControllerLookupTable").default;
 
 class EditorContext {
     constructor() {

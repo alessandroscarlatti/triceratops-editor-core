@@ -1,5 +1,4 @@
-import AbstractCommand from "../AbstractInternalCommand";
-import {IllegalStateException} from "../../../../exceptions/Exceptions";
+const AbstractCommand = require("../AbstractInternalCommand").default;
 
 class GetStructureCommand extends AbstractCommand {
 

@@ -1,4 +1,4 @@
-import {RuntimeException} from "../../../exceptions/Exceptions";
+const RuntimeException = require("../exceptions/Exceptions").RuntimeException;
 
 class InternalCommandFactory {
     constructor(commandsList) {

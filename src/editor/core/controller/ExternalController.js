@@ -3,9 +3,9 @@
  * That is, any actor that wants to invoke an event must invoke
  * a method in the event hub.
  */
-import ExternalCommand from "../commands/model/ExternalCommand";
-import CommandManager from "../components/CommandManager";
-import applyListenableAttributes from "../aspects/ListenableComponentAttributes";
+const ExternalCommand = require("../commands/model/ExternalCommand").default;
+const CommandManager = require("../components/CommandManager").default;
+const applyListenableAttributes = require("../aspects/ListenableComponentAttributes").default;
 
 class ExternalController {
 

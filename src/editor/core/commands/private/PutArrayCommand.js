@@ -1,5 +1,5 @@
-import AbstractInternalCommand from "../AbstractInternalCommand";
-import ArrayController from "../../controller/ArrayController";
+const AbstractInternalCommand = require("../AbstractInternalCommand").default;
+const ArrayController = require("../../controller/ArrayController").default;
 
 /**
  * A PUT_ARRAY command is a one-way operation.

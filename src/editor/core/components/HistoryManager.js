@@ -1,5 +1,5 @@
-import {RuntimeException} from "../../../exceptions/Exceptions";
-import applyListenableAttributes from "../aspects/ListenableComponentAttributes";
+const RuntimeException = require("../exceptions/Exceptions").RuntimeException;
+const applyListenableAttributes = require("../aspects/ListenableComponentAttributes").default;
 
 class HistoryManager {
     constructor() {

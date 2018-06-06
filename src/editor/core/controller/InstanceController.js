@@ -2,7 +2,7 @@
  * A field controller controls the flow of data into and out of a single field,
  * including mutations to that field.
  */
-import {IllegalStateException} from "../../../exceptions/Exceptions";
+const IllegalStateException = require("../exceptions/Exceptions").IllegalStateException;
 
 class InstanceController {
     constructor(path) {

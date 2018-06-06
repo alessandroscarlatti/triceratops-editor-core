@@ -1,4 +1,4 @@
-import {IllegalStateException} from "../../../exceptions/Exceptions";
+const IllegalStateException = require("../exceptions/Exceptions").IllegalStateException;
 
 class AbstractInternalCommand {
 

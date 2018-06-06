@@ -1,4 +1,4 @@
-import InstanceController from "./InstanceController";
+const InstanceController = require("./InstanceController").default;
 
 class ArrayController extends InstanceController {
     get type() {

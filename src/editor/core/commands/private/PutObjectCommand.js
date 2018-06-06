@@ -1,5 +1,5 @@
-import AbstractInternalCommand from "../AbstractInternalCommand";
-import ObjectController from "../../controller/ObjectController";
+const AbstractInternalCommand = require("../AbstractInternalCommand").default;
+const ObjectController = require("../../controller/ObjectController").default;
 
 /**
  * A PUT_OBJECT command is a one-way operation.
@@ -27,6 +27,10 @@ class PutObjectCommand extends AbstractInternalCommand {
         this.editorContext.controllerLookupTable.putAt(this._cmdData.path, new ObjectController(this._cmdData.path));
 
         return true;
+    }
+
+    static get commandName() {
+        return "PUT_OBJECT";
     }
 }
 

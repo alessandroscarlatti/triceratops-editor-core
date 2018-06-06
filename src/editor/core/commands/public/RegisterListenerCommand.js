@@ -1,5 +1,5 @@
-import AbstractCommand from "../AbstractInternalCommand";
-import {IllegalArgumentException} from "../../../../exceptions/Exceptions";
+const AbstractCommand = require("../AbstractInternalCommand").default;
+const IllegalArgumentException = require("../../exceptions/Exceptions").IllegalArgumentException;
 
 class RegisterListenerCommand extends AbstractCommand {
 
@@ -27,10 +27,12 @@ class RegisterListenerCommand extends AbstractCommand {
         if (this.commandData.body.name == null) throw new IllegalArgumentException("Listener name must be provided.");
         if (this.commandData.body.callback == null) throw new IllegalArgumentException("Listener callback must be provided!");
 
-        this.commandData.body = {
-            event: "DEFAULT",
-            ...this.commandData.body,
-        }
+        // TODO fix this spread operator usage with something like shallowClone()?
+
+        // this.commandData.body = {
+        //     event: "DEFAULT",
+        //     ...this.commandData.body,
+        // }
     }
 
     revert() {

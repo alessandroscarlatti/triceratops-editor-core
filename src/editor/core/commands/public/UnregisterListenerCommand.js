@@ -1,5 +1,5 @@
-import AbstractCommand from "../AbstractInternalCommand";
-import {IllegalArgumentException} from "../../../../exceptions/Exceptions";
+const AbstractCommand = require("../AbstractInternalCommand").default;
+const IllegalArgumentException = require("../../exceptions/Exceptions").IllegalArgumentException;
 
 class UnregisterListenerCommand extends AbstractCommand {
 
@@ -26,10 +26,12 @@ class UnregisterListenerCommand extends AbstractCommand {
 
         if (this.commandData.body.name == null) throw new IllegalArgumentException("Listener name must be provided.");
 
-        this.commandData.body = {
-            event: "DEFAULT",
-            ...this.commandData.body,
-        }
+
+        // TODO use something like shallowClone()?
+        // this.commandData.body = {
+        //     event: "DEFAULT",
+        //     ...this.commandData.body,
+        // }
     }
 
     revert() {

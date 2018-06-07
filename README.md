@@ -4,9 +4,21 @@
 [![Build Status](https://travis-ci.org/alessandroscarlatti/triceratops-editor-core.svg?branch=master)](https://travis-ci.org/alessandroscarlatti/triceratops-editor-core)
 
 
-`Editor:`
+## Rules for Paths
 
-`InternalController` is:
+Triceratops Editor will support JSON Path with mandatory `$` and `["key"]` notation.
+
+type | slashes | dots | javascript accessors
+-|-|- | -
+full path | `/library/books/0/author/firstName` | `.library.books[0].author.firstName` | `$['library']['books'][0]['author']['firstName']`
+root | `/` | `.` | `$`
+special characters | `/library/booksByTitle/1/2 cup` | `.library.booksByTitle["1/2 cup"]` | `$['library']['booksByTitle']['1/2 cup']`
+
+> What about paths that include special characters?  Using javascript accessor paths means that special characters are native to the language.
+
+# `Editor:`
+
+## `InternalController` is:
 
 ```
 {
@@ -15,7 +27,7 @@
 }
 ```
 
-for a `ValueController`:
+## for a `ValueController`:
 
 method | side effect | logical response | response example | rationale
 -|-|-|-|-
@@ -23,12 +35,14 @@ method | side effect | logical response | response example | rationale
 `path()` | none | path of this controller | "/asdf" | I would want to know the path that this controller thinks it is
 `getValue()` | none | the value stored in the instance this controller represents.  Could be `undefined`, `null`, or real. | "hey!" | I would want to know the actual real value at the atomic level.
 `setValue(value)` | stores `value` in the controller state | `void` or `Exception` | `void` | This will actually set the "value" at the controller path.
+`getChildPaths()` | none | the direct child paths of this controller. | always `[]` | use the children
+`numChildren()` | none | the number of direct children | always 0 | It will probably be useful to have a more convenient and more efficient method 
 `getParentPath()` | none | return the path to the parent | "/" | This path should have a controller available in the lookup table.
 `delete()` | this controller will no longer be connected to the rest of the controllers. | `void` or `Exception` | `void` | All methods called on the controller instance after this method should throw an `IllegalStateException`.  All references to external objects must be relinquished.
 `setProperty(key, value)` | add the key and value to the custom data properties map for this controller, or update the value if the key already exists. | `void` | `void` | There may be a need to have custom stateful data within a controller.  But that data must also be able to persist across the controller being "moved".
 `getProperty(key)` | none | return the custom value at this key | `undefined`, `null`, or real | We will want to be able to retrieve a custom property once it has been set.
 
-for an `ObjectController`:
+## for an `ObjectController`:
 
 method | side effect | logical response | response example | rationale
 -|-|-|-|-

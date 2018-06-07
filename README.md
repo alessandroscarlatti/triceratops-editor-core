@@ -38,7 +38,7 @@ method | side effect | logical response | response example | rationale
 `getChildPaths()` | none | the direct child paths of this controller. | always `[]` | use the children
 `numChildren()` | none | the number of direct children | always 0 | It will probably be useful to have a more convenient and more efficient method 
 `getParentPath()` | none | return the path to the parent | "/" | This path should have a controller available in the lookup table.
-`delete()` | this controller will no longer be connected to the rest of the controllers. | `void` or `Exception` | `void` | All methods called on the controller instance after this method should throw an `IllegalStateException`.  All references to external objects must be relinquished.
+`delete()` | DEPRECATED this controller will no longer be connected to the rest of the controllers. | `void` or `Exception` | `void` | All methods called on the controller instance after this method should throw an `IllegalStateException`.  All references to external objects must be relinquished.
 `setProperty(key, value)` | add the key and value to the custom data properties map for this controller, or update the value if the key already exists. | `void` | `void` | There may be a need to have custom stateful data within a controller.  But that data must also be able to persist across the controller being "moved".
 `getProperty(key)` | none | return the custom value at this key | `undefined`, `null`, or real | We will want to be able to retrieve a custom property once it has been set.
 
@@ -53,6 +53,6 @@ method | side effect | logical response | response example | rationale
 `getChildPaths()` | none | the direct child paths of this controller. | ["/asdf","/qwer"] | use the children
 `numChildren()` | none | the number of direct children | 2 | It will probably be useful to have a more convenient and more efficient method here than to always return all string paths, only to count the number of strings in the array.
 `getParentPath()` | none | return the path to the parent | "/" | This path should have a controller available in the lookup table.
-`delete()` | this controller will no longer be connected to the rest of the controllers.  All children must first be **recursively** deleted. | `void` or `Exception` | `void` | All methods called on the controller instance after this method should throw an `IllegalStateException`.  All references to external objects must be relinquished.
+`delete()` | DEPRECATED this controller will no longer be connected to the rest of the controllers.  All children must first be **recursively** deleted. | `void` or `Exception` | `void` | All methods called on the controller instance after this method should throw an `IllegalStateException`.  All references to external objects must be relinquished.
 `setProperty(key, value)` | add the key and value to the custom data properties map for this controller, or update the value if the key already exists. | `void` | `void` | There may be a need to have custom stateful data within a controller.  But that data must also be able to persist across the controller being "moved".
 `getProperty(key)` | none | return the custom value at this key | `undefined`, `null`, or real | We will want to be able to retrieve a custom property once it has been set.

@@ -3,7 +3,9 @@
  * including mutations to that field.
  */
 
-// TODO working on getting the instance controller filled with methods...
+const JsonPathParser = require("../util/JsonPathParser").JsonPathParser;
+
+    // TODO working on getting the instance controller filled with methods...
 
 class InstanceController {
     constructor(path, value, context) {
@@ -13,7 +15,7 @@ class InstanceController {
         this._path = path;
         this._context = context;
         this._type = null;
-        this._parentPath = null; // TODO work on this...
+        this._parentPath = new JsonPathParser(path).getParentPath();
         this._childPaths = [];
         this._atomicValue = undefined;
         this._properties = {};
@@ -90,7 +92,7 @@ class InstanceController {
      * @return {string} path to parent controller.
      */
     get parentPath() {
-
+        return this._parentPath;
     }
 
     getProperty(key) {

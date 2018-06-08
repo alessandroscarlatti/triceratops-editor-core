@@ -21,7 +21,6 @@ suite("test instance controller methods", function () {
 
         assert.equal(ctrl.numChildren, 0);
         assert.deepEqual(ctrl.childPaths, []);
-
-        // assert.equal(ctrl.parentPath, "$['author']");
+        assert.equal(ctrl.parentPath, "$['author']");
     });
 });

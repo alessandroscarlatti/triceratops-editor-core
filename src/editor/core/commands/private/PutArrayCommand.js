@@ -21,7 +21,7 @@ class PutArrayCommand extends AbstractInternalCommand {
         // talk to the controllerLookupTable
         // add a new controller (or replace the existing controller)
         // at the specified path
-        this.editorContext.controllerLookupTable.putAt(this._cmdData.path, new ArrayController(this._cmdData.path));
+        this.editorContext.controllerLookupTable.putAt(this._cmdData.path, []);
         return true;
     }
 }

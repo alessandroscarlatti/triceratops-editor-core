@@ -99,7 +99,7 @@ class JsonPathParser {
         } else if (crumblet.startsWith("[")) {
             return this._stripNextArrayAccessor(workingPath);
         } else {
-            throw new Error(`Invalid accessor beginning with ${crumblet} at ${workingPath} for path ${this._path}`)
+            throw new Error(`Invalid accessor beginning with ${crumblet} at ${workingPath} in path ${this._path}`)
         }
     }
 

@@ -63,7 +63,8 @@ describe("get parent path util returns parent path", function () {
             "$$",
             " $",
             "$['authors'][",
-            "$'authors']["
+            "$'authors'][",
+            "$'authors'['asdf']"
         ];
 
         invalidPaths.forEach(function(p) {

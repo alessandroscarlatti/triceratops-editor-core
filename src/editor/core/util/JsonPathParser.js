@@ -9,6 +9,7 @@ class JsonPathParser {
         this.getParentPath = this.getParentPath.bind(this);
         this._buildParentPathString = this._buildParentPathString.bind(this);
         this._parse = this._parse.bind(this);
+        this.getAccessors = this.getAccessors.bind(this);
 
         this._path = path;
         this._bc = [];
@@ -37,6 +38,19 @@ class JsonPathParser {
         }
     }
 
+    getAccessors() {
+        if (this._bc.length === 1)
+            return [];
+
+        let accs = [];
+
+        for (let i = 1; i < this._bc.length; i++) {
+            accs.push(JsonPathParser._parseAccessor(this._bc[i]));
+        }
+
+        return accs;
+    }
+
     getParentPath() {
         return this._buildParentPathString();
     }
@@ -46,14 +60,17 @@ class JsonPathParser {
         if (this._bc.length === 1)
             return "$";
 
-        let rawName = this._bc[this._bc.length - 1];
-        let piece = rawName.substring(0, 2);
+        return JsonPathParser._parseAccessor(this._bc[this._bc.length - 1]);
+    }
+
+    static _parseAccessor(raw) {
+        let piece = raw.substring(0, 2);
         if (piece === "['") {
-            return rawName.substring(2, rawName.length - 2);
+            return raw.substring(2, raw.length - 2);
         } else if (piece.startsWith("[")) {
-            return rawName.substring(1, rawName.length - 1);
+            return raw.substring(1, raw.length - 1);
         } else {
-            throw new Error(`Invalid path name at ${rawName} for path ${this._path}`);
+            throw new Error(`Invalid path name at ${raw} for path ${this._path}`);
         }
     }
 

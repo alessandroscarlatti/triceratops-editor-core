@@ -43,6 +43,5 @@ suite("test instance controller methods", function () {
             "$['author']['firstName']",
             "$['author']['lastName']",
         ]);
-
     });
 });

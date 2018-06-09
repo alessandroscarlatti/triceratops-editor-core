@@ -7,8 +7,23 @@ class JsonPath {
         this.toString = this.toString.bind(this);
     }
 
+    get name() {
+
+        if (this.accessors.length === 0)
+            return "$";
+
+        return this._accessors[this._accessors.length - 1];
+    }
+
     get accessors() {
         return this._accessors;
+    }
+
+    get parent() {
+        if (this._accessors.length === 0)
+            return this;
+
+        return JsonPath.get(this._accessors.slice(0, this._accessors.length - 1));
     }
 
     static get() {

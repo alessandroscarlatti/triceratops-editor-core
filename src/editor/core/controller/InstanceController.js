@@ -8,6 +8,12 @@ const JsonPathParser = require("../util/JsonPathParser").JsonPathParser;
     // TODO working on getting the instance controller filled with methods...
 
 class InstanceController {
+    /**
+     *
+     * @param path {JsonPath}
+     * @param value
+     * @param context
+     */
     constructor(path, value, context) {
         this.getProperty = this.getProperty.bind(this);
         this.setProperty = this.setProperty.bind(this);

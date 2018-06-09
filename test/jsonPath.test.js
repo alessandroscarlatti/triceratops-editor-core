@@ -62,4 +62,51 @@ describe("JsonPath test", function () {
             assert.deepEqual(newPath.accessors, origPathAccs);
         });
     });
+
+    describe("get parent from existing path", function() {
+        let origPath = JsonPath.get("authors", "0", "firstName");
+
+        it (`get parent from ${origPath}`, function() {
+            let newPath = origPath.parent;
+            let expAccs = ["authors", "0"];
+            assert.deepEqual(newPath.accessors, expAccs)
+        });
+
+        it (`get parent from ${origPath.parent}`, function() {
+            let newPath = origPath.parent.parent;
+            let expAccs = ["authors"];
+            assert.deepEqual(newPath.accessors, expAccs)
+        });
+
+        it (`get parent from ${origPath.parent.parent}`, function() {
+            let newPath = origPath.parent.parent.parent;
+            let expAccs = [];
+            assert.deepEqual(newPath.accessors, expAccs)
+        });
+
+        it (`get parent from ${origPath.parent.parent.parent}`, function() {
+            let newPath = origPath.parent.parent.parent.parent;
+            let expAccs = [];
+            assert.deepEqual(newPath.accessors, expAccs)
+        });
+    });
+
+    describe("get name from path", function() {
+        let path = JsonPath.get("authors", 0, "firstName");
+        it(`get name from ${path}`, function () {
+            assert.equal("firstName", path.name);
+        });
+
+        it(`get name from ${path.parent}`, function () {
+            assert.equal("0", path.parent.name);
+        });
+
+        it(`get name from ${path.parent.parent}`, function () {
+            assert.equal("authors", path.parent.parent.name);
+        });
+
+        it(`get name from ${path.parent.parent.parent}`, function () {
+            assert.equal("$", path.parent.parent.parent.name);
+        });
+    })
 });

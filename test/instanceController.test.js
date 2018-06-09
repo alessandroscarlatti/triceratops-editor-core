@@ -74,7 +74,9 @@ suite("test instance controller methods", function () {
         let path = JsonPath.get("author", "middleName");
         let value = undefined;
 
-        assert.throws(() => {ctx.putAt(path, value)}, Error)
+        assert.throws(() => {
+            ctx.putAt(path, value)
+        }, Error)
     });
 
     test("create and retrieve value instance", function () {
@@ -302,7 +304,7 @@ suite("test instance controller methods", function () {
         });
     });
 
-    test("update value instance", function() {
+    test("update value instance", function () {
         let path = JsonPath.get("sillyValueInstance");
         ctx.putAt(path, "sillyValue");
 
@@ -311,7 +313,7 @@ suite("test instance controller methods", function () {
         assert(ctrl.value, "newValue");
     });
 
-    test("update object instance", function() {
+    test("update object instance", function () {
         let path = JsonPath.get("sillyObjectInstance");
         let value = {
             firstName: "Theodor",
@@ -335,5 +337,26 @@ suite("test instance controller methods", function () {
 
         assert.deepEqual(ctrl.value, newValue);
     })
-})
-;
+
+    test("update array instance", function () {
+        let path = JsonPath.get("sillyArrayInstance");
+        let value = [
+            "Cat in the Hat",
+            "Cat in the Hat Comes Back",
+        ];
+
+        ctx.putAt(path, value);
+
+        console.log("context before update", ctx.controllers.map((i) => i.path.toString()));
+
+        let ctrl = ctx.getAt(path);
+        let newValue = [
+            "In a People House"
+        ];
+        ctrl.value = newValue;
+
+        console.log("context after update", ctx.controllers.map((i) => i.path.toString()));
+
+        assert.deepEqual(ctrl.value, newValue);
+    })
+});

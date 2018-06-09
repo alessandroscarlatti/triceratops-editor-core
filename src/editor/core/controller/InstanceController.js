@@ -176,8 +176,34 @@ class InstanceController {
         }
     }
 
-    _updateArrayValue(val) {
+    _updateArrayValue(arr) {
+        let oldChildPaths = {};
+        for (let childPath of this._childPaths) {
+            oldChildPaths[childPath.toString()] = childPath;
+        }
 
+        this._childPaths = [];
+
+        for (let i = 0; i < arr.length; i++) {
+            let childPath = JsonPath.get(this._path, i);
+            let childCtrl = this._context.getAt(childPath);
+            let childVal = arr[i];
+            if (childCtrl == null) {
+                // add new
+                this._context.putAt(childPath, childVal);
+            } else {
+                // update existing
+                childCtrl.value = childVal;
+            }
+            this._childPaths.push(childPath);
+            delete oldChildPaths[childPath.toString()];
+        }
+
+        for (let p in oldChildPaths) {
+            if (oldChildPaths.hasOwnProperty(p)) {
+                this._context.removeAt(oldChildPaths[p]);
+            }
+        }
     }
 
     _getChildPath(childName) {

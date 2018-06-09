@@ -6,7 +6,52 @@ suite("test instance controller methods", function () {
 
     let ctx;
 
-    setup(function() {
+    const DEEP_OBJ_INST = {
+        titles: [
+            "Cat in the Hat",
+            "Cat in the Hat Comes Back",
+        ],
+        authors: [
+            {
+                firstName: "Theodor",
+                lastName: "Lesieg",
+            },
+            {
+                firstName: "Mary",
+                lastName: "Evans",
+            }
+        ]
+    };
+
+    const DEEP_ARR_INST = [
+        [
+            {
+                firstName: "Theodor",
+                lastName: "Lesieg",
+                data: {
+                    monikers: ['Dr. Seuss']
+                }
+            },
+            {
+                firstName: "Mary",
+                lastName: "Evans",
+                data: {
+                    monikers: ["George Elliot"]
+                }
+            },
+        ],
+        [
+            {
+                firstName: "Samuel",
+                lastName: "Clemens",
+                data: {
+                    monikers: ['Mark Twain']
+                }
+            },
+        ]
+    ];
+
+    setup(function () {
         ctx = new InstanceControllerContext();
     });
 
@@ -47,7 +92,7 @@ suite("test instance controller methods", function () {
         assert.equal(ctrl.parentPath.toString(), path.parent.toString());
     });
 
-    test("store and retrieve object instance", function() {
+    test("store and retrieve object instance", function () {
         let path = JsonPath.get("author");
         let value = {
             firstName: "Theodor",
@@ -62,13 +107,13 @@ suite("test instance controller methods", function () {
 
         assert.equal(ctrl.parentPath.toString(), "$");
         assert.equal(ctrl.numChildren, 2);
-        assert.deepEqual(ctrl.childPaths.map((i)=> i.toString()), [
+        assert.deepEqual(ctrl.childPaths.map((i) => i.toString()), [
             JsonPath.get("author", "firstName").toString(),
             JsonPath.get("author", "lastName").toString(),
         ]);
     });
 
-    test("store and retrieve array instance", function() {
+    test("store and retrieve array instance", function () {
         let path = JsonPath.get("titles");
         let value = [
             "Cat in the Hat",
@@ -83,30 +128,15 @@ suite("test instance controller methods", function () {
 
         assert.equal(ctrl.parentPath.toString(), "$");
         assert.equal(ctrl.numChildren, 2);
-        assert.deepEqual(ctrl.childPaths.map((i)=> i.toString()), [
+        assert.deepEqual(ctrl.childPaths.map((i) => i.toString()), [
             JsonPath.get("titles", "0").toString(),
             JsonPath.get("titles", "1").toString(),
         ]);
     });
 
-    test("store and retrieve deep object instance", function() {
+    test("store and retrieve deep object instance", function () {
         let path = JsonPath.get("library");
-        let value = {
-            titles: [
-                "Cat in the Hat",
-                "Cat in the Hat Comes Back",
-            ],
-            authors: [
-                {
-                    firstName: "Theodor",
-                    lastName: "Lesieg",
-                },
-                {
-                    firstName: "Mary",
-                    lastName: "Evans",
-                }
-            ]
-        };
+        let value = DEEP_OBJ_INST;
 
         ctx.putAt(path, value);
         let ctrl = ctx.getAt(path);
@@ -117,26 +147,9 @@ suite("test instance controller methods", function () {
         assert.deepEqual(ctrl.value, value);
     });
 
-    test("store and retrieve deep array instance", function() {
+    test("store and retrieve deep array instance", function () {
         let path = JsonPath.get("library");
-        let value = {
-            authors: [
-                {
-                    firstName: "Theodor",
-                    lastName: "Lesieg",
-                    data: {
-                        monikers: ['Dr. Seuss']
-                    }
-                },
-                {
-                    firstName: "Mary",
-                    lastName: "Evans",
-                    data: {
-                        monikers: ["George Elliot"]
-                    }
-                }
-            ]
-        };
+        let value = DEEP_ARR_INST;
 
         ctx.putAt(path, value);
         let ctrl = ctx.getAt(path);
@@ -146,4 +159,147 @@ suite("test instance controller methods", function () {
         console.log("value?", value);
         assert.deepEqual(ctrl.value, value);
     });
-});
+
+    test("delete value instance", function () {
+        let path = JsonPath.get("sillyValueInstance");
+        ctx.putAt(path, "sillyValue");
+
+        // make sure that the path exists...
+        let ctrls = ctx.controllers;
+        let ctrlsPaths = ctrls.map((i) => i.path.toString());
+        console.log("controllers before delete", ctrlsPaths);
+        assert(ctrlsPaths.includes(path.toString()));
+
+        // now delete it
+        ctx.removeAt(path);
+
+        // make sure that the path does not exist...
+        let ctrlsAfterDelete = ctx.controllers;
+        let ctrlsPathsAfterDelete = ctrlsAfterDelete.map((i) => i.path.toString());
+        console.log("controllers after delete", ctrlsPathsAfterDelete);
+        assert(!ctrlsPathsAfterDelete.includes(path.toString()));
+    });
+
+    test("delete null value instance", function () {
+        let path = JsonPath.get("sillyValueInstance");
+        ctx.putAt(path, null);
+
+        // make sure that the path exists...
+        let ctrls = ctx.controllers;
+        let ctrlsPaths = ctrls.map((i) => i.path.toString());
+        console.log("controllers before delete", ctrlsPaths);
+        assert(ctrlsPaths.includes(path.toString()));
+
+        // now delete it
+        ctx.removeAt(path);
+
+        // make sure that the path does not exist...
+        let ctrlsAfterDelete = ctx.controllers;
+        let ctrlsPathsAfterDelete = ctrlsAfterDelete.map((i) => i.path.toString());
+        console.log("controllers after delete", ctrlsPathsAfterDelete);
+        assert(!ctrlsPathsAfterDelete.includes(path.toString()));
+    });
+
+    test("delete object instance", function () {
+        let path = JsonPath.get("sillyObjectInstance");
+        let value = {
+            firstName: "Theodor",
+            lastName: "Lesieg",
+        };
+        ctx.putAt(path, value);
+
+        // make sure that the path exists...
+        let ctrls = ctx.controllers;
+        let ctrlsPaths = ctrls.map((i) => i.path.toString());
+        console.log("controllers before delete", ctrlsPaths);
+        assert(ctrlsPaths.includes(path.toString()));
+
+        // now delete it
+        ctx.removeAt(path);
+
+        // make sure that the path does not exist...
+        let ctrlsAfterDelete = ctx.controllers;
+        let ctrlsPathsAfterDelete = ctrlsAfterDelete.map((i) => i.path.toString());
+        console.log("controllers after delete", ctrlsPathsAfterDelete);
+
+        ctrlsAfterDelete.forEach((ctrl) => {
+            assert.notEqual(ctrl.path.accessors[0], "sillyObjectInstance")
+        });
+    });
+
+    test("delete array instance", function () {
+        let path = JsonPath.get("sillyArrayInstance");
+        let value = [
+            "Cat in the Hat",
+            "Cat in the Hat Comes Back",
+        ];
+        ctx.putAt(path, value);
+
+        // make sure that the path exists...
+        let ctrls = ctx.controllers;
+        let ctrlsPaths = ctrls.map((i) => i.path.toString());
+        console.log("controllers before delete", ctrlsPaths);
+        assert(ctrlsPaths.includes(path.toString()));
+
+        // now delete it
+        ctx.removeAt(path);
+
+        // make sure that the path does not exist...
+        let ctrlsAfterDelete = ctx.controllers;
+        let ctrlsPathsAfterDelete = ctrlsAfterDelete.map((i) => i.path.toString());
+        console.log("controllers after delete", ctrlsPathsAfterDelete);
+
+        ctrlsAfterDelete.forEach((ctrl) => {
+            assert.notEqual(ctrl.path.accessors[0], "sillyArrayInstance")
+        });
+    });
+
+    test("delete deep object instance", function () {
+        let path = JsonPath.get("sillyArrayInstance");
+        let value = DEEP_OBJ_INST;
+        ctx.putAt(path, value);
+
+        // make sure that the path exists...
+        let ctrls = ctx.controllers;
+        let ctrlsPaths = ctrls.map((i) => i.path.toString());
+        console.log("controllers before delete", ctrlsPaths);
+        assert(ctrlsPaths.includes(path.toString()));
+
+        // now delete it
+        ctx.removeAt(path);
+
+        // make sure that the path does not exist...
+        let ctrlsAfterDelete = ctx.controllers;
+        let ctrlsPathsAfterDelete = ctrlsAfterDelete.map((i) => i.path.toString());
+        console.log("controllers after delete", ctrlsPathsAfterDelete);
+
+        ctrlsAfterDelete.forEach((ctrl) => {
+            assert.notEqual(ctrl.path.accessors[0], "sillyArrayInstance")
+        });
+    });
+
+    test("delete deep array instance", function () {
+        let path = JsonPath.get("sillyArrayInstance");
+        let value = DEEP_ARR_INST;
+        ctx.putAt(path, value);
+
+        // make sure that the path exists...
+        let ctrls = ctx.controllers;
+        let ctrlsPaths = ctrls.map((i) => i.path.toString());
+        console.log("controllers before delete", ctrlsPaths);
+        assert(ctrlsPaths.includes(path.toString()));
+
+        // now delete it
+        ctx.removeAt(path);
+
+        // make sure that the path does not exist...
+        let ctrlsAfterDelete = ctx.controllers;
+        let ctrlsPathsAfterDelete = ctrlsAfterDelete.map((i) => i.path.toString());
+        console.log("controllers after delete", ctrlsPathsAfterDelete);
+
+        ctrlsAfterDelete.forEach((ctrl) => {
+            assert.notEqual(ctrl.path.accessors[0], "sillyArrayInstance")
+        });
+    });
+})
+;

@@ -4,7 +4,8 @@ const JsonPath = require("../util/JsonPath").JsonPath;
 class InstanceControllerContext {
     constructor() {
         this._newController = this._newController.bind(this);
-        this.table = {};
+        this.toString = this.toString.bind(this);
+        this._table = {};
     }
 
     /**
@@ -12,7 +13,7 @@ class InstanceControllerContext {
      * @param path the JSON path to use against the table
      */
     getAt(path) {
-        return this.table[path.toString()];
+        return this._table[path.toString()];
     }
 
     /**
@@ -22,11 +23,11 @@ class InstanceControllerContext {
      */
     putAt(path, value) {
         let key = path.toString();
-        if (this.table[key]) {
+        if (this._table[key]) {
             console.warn(`path ${key} already exists in table!`)
         }
 
-        this.table[key] = this._newController(path, value);
+        this._table[key] = this._newController(path, value);
     }
 
     /**
@@ -41,12 +42,37 @@ class InstanceControllerContext {
         return ctrl;
     }
 
+    get controllers() {
+        let ctrls = [];
+        let table = this._table;
+        for (let ctrl in table) {
+            if (table.hasOwnProperty(ctrl)) {
+                ctrls.push(table[ctrl]);
+            }
+        }
+        return ctrls;
+    }
+
     /**
      * Remove recursively at the given path.
      * @param path the path to look for
      */
     removeAt(path) {
-        // TODO implement this...
+        let ctrl = this.getAt(path);
+        let childPaths = ctrl.childPaths;
+
+        // ask each child to be removed before finally removing this one...
+        for (let i = 0; i < childPaths.length; i++) {
+            this.removeAt(childPaths[i]);
+        }
+
+        delete this._table[path.toString()];
+    }
+
+    toString() {
+        let str = "InstanceControllerContext";
+        str += "[" + this._table + "]";
+        return str;
     }
 }
 

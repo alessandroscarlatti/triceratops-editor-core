@@ -23,4 +23,26 @@ suite("test instance controller methods", function () {
         assert.deepEqual(ctrl.childPaths, []);
         assert.equal(ctrl.parentPath, "$['author']");
     });
+
+    test("store and retrieve object instance", function() {
+        let path = "$['author']";
+        let value = {
+            firstName: "Theodor",
+            lastName: "Lesieg",
+        };
+
+        ctx.putAt(path, value);
+        let ctrl = ctx.getAt(path);
+
+        assert.equal(ctrl.path, path);
+        assert.deepEqual(ctrl.value, value);
+
+        assert.equal(ctrl.parentPath, "$");
+        assert.equal(ctrl.numChildren, 2);
+        assert.deepEqual(ctrl.childPaths, [
+            "$['author']['firstName']",
+            "$['author']['lastName']",
+        ]);
+
+    });
 });

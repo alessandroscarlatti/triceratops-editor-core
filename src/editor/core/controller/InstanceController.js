@@ -11,11 +11,19 @@ class InstanceController {
     constructor(path, value, context) {
         this.getProperty = this.getProperty.bind(this);
         this.setProperty = this.setProperty.bind(this);
+        this._buildObject = this._buildObject.bind(this);
+        this._buildArray = this._buildArray.bind(this);
+        this._setObjectValue = this._setObjectValue.bind(this);
+        this._setArrayValue = this._setArrayValue.bind(this);
+        this._getChildPath = this._getChildPath.bind(this);
+
+        let pathParser = new JsonPathParser(path);
 
         this._path = path;
+        this._name = pathParser.getName();
         this._context = context;
         this._type = null;
-        this._parentPath = new JsonPathParser(path).getParentPath();
+        this._parentPath = pathParser.getParentPath();
         this._childPaths = [];
         this._atomicValue = undefined;
         this._properties = {};
@@ -46,11 +54,15 @@ class InstanceController {
      * May recursively call related (child) controllers.
      */
     get value() {
-        if (this.type === "VALUE_TYPE") {
+        if (this._type === "VALUE_TYPE") {
             return this._atomicValue;
+        } else if (this._type === "OBJECT_TYPE") {
+            return this._buildObject();
+        } else if (this._type === "ARRAY_TYPE") {
+            return this._buildArray();
         }
 
-        throw "have not implemented non-value types yet."
+        throw new Error(`Error constructing type for ${this._type}`);
     }
 
     /**
@@ -60,13 +72,64 @@ class InstanceController {
      * @param value the new value for the field this controlle represents.
      */
     set value(value) {
-        if (this.isInstanceAtomic(value)) {
+        if (this._isInstanceAtomic(value)) {
             this._atomicValue = value;
             this._type = "VALUE_TYPE";
+        } else {
+            if (value.constructor.name === "Object") {
+                this._type = "OBJECT_TYPE";
+                this._setObjectValue(value);
+            } else if (value.constructor.name === "Array") {
+                this._type = "ARRAY_TYPE";
+                this._setArrayValue(value);
+            } else {
+                throw new Error(`Unrecognized instance type '${value.constructor.name}' for instance ${value}`)
+            }
         }
     }
 
-    isInstanceAtomic(inst) {
+    _setObjectValue(obj) {
+        for (let p in obj) {
+            if (obj.hasOwnProperty(p)) {
+                let childPath = this._getChildPath(p);
+                this._context.putAt(childPath, obj[p]);
+                this._childPaths.push(childPath);
+            }
+        }
+    }
+
+    _getChildPath(childName) {
+        if (childName.constructor.name === "String") {
+            return `${this._path}['${childName}']`
+        } else if (childName.constructor.name === "Number") {
+            return `${this._path}[${childName}]`
+        } else {
+            throw new Error(`Unrecognized type ${childName.constructor.name}`);
+        }
+    }
+
+    _setArrayValue() {
+
+    }
+
+    _buildObject() {
+        let obj = {};
+        for (let i = 0; i < this._childPaths.length; i++) {
+            let path = this._childPaths[i];
+            let ctrl = this._context.getAt(path);
+            let value = ctrl.value;
+            let name = ctrl.name;
+            obj[name] = value;
+        }
+
+        return obj;
+    }
+
+    _buildArray() {
+
+    }
+
+    _isInstanceAtomic(inst) {
         if (inst.constructor.name !== "Object" && inst.constructor.name !== "Array") {
             return true;
         } else {
@@ -86,6 +149,10 @@ class InstanceController {
      */
     get numChildren() {
         return this._childPaths.length;
+    }
+
+    get name() {
+        return this._name;
     }
 
     /**

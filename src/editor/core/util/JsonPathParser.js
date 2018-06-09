@@ -41,6 +41,22 @@ class JsonPathParser {
         return this._buildParentPathString();
     }
 
+    getName() {
+        // remove brackets
+        if (this._bc.length === 1)
+            return "$";
+
+        let rawName = this._bc[this._bc.length - 1];
+        let piece = rawName.substring(0, 2);
+        if (piece === "['") {
+            return rawName.substring(2, rawName.length - 2);
+        } else if (piece.startsWith("[")) {
+            return rawName.substring(1, rawName.length - 1);
+        } else {
+            throw new Error(`Invalid path name at ${rawName} for path ${this._path}`);
+        }
+    }
+
     _buildParentPathString() {
         if (this._bc.length === 1)
             return null;

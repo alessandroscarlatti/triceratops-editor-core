@@ -1,7 +1,7 @@
 const assert = require("assert");
 const JsonPath = require("../src/editor/core/util/JsonPath").JsonPath;
 describe("JsonPath test", function () {
-    describe("create path from json path string", function () {
+    describe.skip("create path from json path string", function () {
 
         let jp0 = "$['author']['firstName']";
         it(`path ${jp0} has correct accessors`, function () {

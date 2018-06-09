@@ -79,6 +79,9 @@ class InstanceController {
      * @param value the new value for the field this controlle represents.
      */
     set value(value) {
+        if (value === undefined)
+            throw new Error(`InstanceController may not have illegal value '${value}'`);
+
         if (InstanceController._isInstanceAtomic(value)) {
             this._atomicValue = value;
             this._type = "VALUE_TYPE";
@@ -150,6 +153,9 @@ class InstanceController {
     }
 
     static _isInstanceAtomic(inst) {
+        if (inst == null)
+            return true;
+
         if (inst.constructor.name !== "Object" && inst.constructor.name !== "Array") {
             return true;
         } else {

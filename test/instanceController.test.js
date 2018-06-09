@@ -301,5 +301,39 @@ suite("test instance controller methods", function () {
             assert.notEqual(ctrl.path.accessors[0], "sillyArrayInstance")
         });
     });
+
+    test("update value instance", function() {
+        let path = JsonPath.get("sillyValueInstance");
+        ctx.putAt(path, "sillyValue");
+
+        let ctrl = ctx.getAt(path);
+        ctrl.value = "newValue";
+        assert(ctrl.value, "newValue");
+    });
+
+    test("update object instance", function() {
+        let path = JsonPath.get("sillyObjectInstance");
+        let value = {
+            firstName: "Theodor",
+            lastName: "Lesieg",
+            suffix: "II",
+        };
+
+        ctx.putAt(path, value);
+
+        console.log("context before update", ctx.controllers.map((i) => i.path.toString()));
+
+        let ctrl = ctx.getAt(path);
+        let newValue = {
+            firstName: "Theodor",
+            middleName: "Thomas",
+            lastName: "Quater",
+        };
+        ctrl.value = newValue;
+
+        console.log("context after update", ctx.controllers.map((i) => i.path.toString()));
+
+        assert.deepEqual(ctrl.value, newValue);
+    })
 })
 ;

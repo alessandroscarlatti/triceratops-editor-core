@@ -11,6 +11,7 @@ class InstanceControllerContext {
     /**
      * Get the component at the specified JSON path
      * @param path the JSON path to use against the table
+     * @return {InstanceController}
      */
     getAt(path) {
         return this._table[path.toString()];
@@ -18,17 +19,45 @@ class InstanceControllerContext {
 
     /**
      * Add the controller to the table at the specified path
-     * @param path where to put the controller
+     * @param path {JsonPath} where to put the controller
      * @param value the initial value for the instance
      */
     putAt(path, value) {
         let key = path.toString();
-        if (this._table[key]) {
-            console.warn(`path ${key} already exists in table!`)
-        }
+        if (this._table[key])
+            throw new Error(`A controller for path ${path} already exists`);
 
         this._table[key] = this._newController(path, value);
     }
+
+    /**
+     * Update the controller value at the specified path.
+     * Changes shall perform update wherever possible,
+     * creating new controllers where necessary and
+     * deleting orphaned controllers, if any.
+     * @param path {JsonPath}
+     * @param value the new value.
+     */
+    updateAt(path, value) {
+        this._updateController(path, value);
+    }
+
+    /**
+     * Remove recursively at the given path.
+     * @param path {JsonPath} the path to look for
+     */
+    removeAt(path) {
+        let ctrl = this.getAt(path.toString());
+        let childPaths = ctrl.childPaths;
+
+        // ask each child to be removed before finally removing this one...
+        for (let i = 0; i < childPaths.length; i++) {
+            this.removeAt(childPaths[i]);
+        }
+
+        delete this._table[path.toString()];
+    }
+
 
     /**
      * Create a new controller at this path with this value.
@@ -51,22 +80,6 @@ class InstanceControllerContext {
             }
         }
         return ctrls;
-    }
-
-    /**
-     * Remove recursively at the given path.
-     * @param path the path to look for
-     */
-    removeAt(path) {
-        let ctrl = this.getAt(path);
-        let childPaths = ctrl.childPaths;
-
-        // ask each child to be removed before finally removing this one...
-        for (let i = 0; i < childPaths.length; i++) {
-            this.removeAt(childPaths[i]);
-        }
-
-        delete this._table[path.toString()];
     }
 
     toString() {

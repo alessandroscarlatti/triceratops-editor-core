@@ -3,6 +3,8 @@ const JsonPathParser = require("./JsonPathParser").JsonPathParser;
 class JsonPath {
     constructor() {
         this._accessors = [];
+
+        this.toString = this.toString.bind(this);
     }
 
     get accessors() {
@@ -11,7 +13,7 @@ class JsonPath {
 
     static get() {
         // evaluate arguments dynamically...
-        let args = arguments;
+        let args = Array.from(arguments);
         if (args.length === 1) {
             let arg = args[0];
             if (arg.constructor.name === JsonPath.name) {
@@ -47,13 +49,24 @@ class JsonPath {
 
     static _getFromJsonPath(path) {
         let newPath = new JsonPath();
+        newPath._accessors.push(...path.accessors);
         return newPath;
     }
 
     static _getFromJsonPathAndAdditionalVals(path, keys) {
         let newPath = new JsonPath();
-
+        newPath._accessors.push(...path.accessors, ...keys);
         return newPath;
+    }
+
+    toString() {
+        let str = "$";
+
+        for (let i = 0; i < this._accessors.length; i++) {
+            str += "['" + this._accessors[i] + "']";
+        }
+
+        return str;
     }
 }
 

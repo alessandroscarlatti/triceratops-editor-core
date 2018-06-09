@@ -1,8 +1,9 @@
 const InstanceController = require("./InstanceController").default;
+const JsonPath = require("../util/JsonPath").JsonPath;
 
 class InstanceControllerContext {
     constructor() {
-        this.newController = this.newController.bind(this);
+        this._newController = this._newController.bind(this);
         this.table = {};
     }
 
@@ -11,7 +12,7 @@ class InstanceControllerContext {
      * @param path the JSON path to use against the table
      */
     getAt(path) {
-        return this.table[path];
+        return this.table[path.toString()];
     }
 
     /**
@@ -20,11 +21,12 @@ class InstanceControllerContext {
      * @param value the initial value for the instance
      */
     putAt(path, value) {
-        if (this.table[path]) {
-            console.warn(`path ${path} already exists in table!`)
+        let key = path.toString();
+        if (this.table[key]) {
+            console.warn(`path ${key} already exists in table!`)
         }
 
-        this.table[path] = this.newController(path, value);
+        this.table[key] = this._newController(path, value);
     }
 
     /**
@@ -33,9 +35,9 @@ class InstanceControllerContext {
      * @param path path for the new controller.
      * @param value value for the new controller.
      */
-    newController(path, value) {
+    _newController(path, value) {
         let ctrl = new InstanceController(path, value, this);
-        console.log("new instance controller", ctrl);
+        console.log("new instance controller" + ctrl);
         return ctrl;
     }
 

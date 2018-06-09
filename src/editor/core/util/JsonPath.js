@@ -26,6 +26,9 @@ class JsonPath {
         return JsonPath.get(this._accessors.slice(0, this._accessors.length - 1));
     }
 
+    /**
+     * @return {JsonPath}
+     */
     static get() {
         // evaluate arguments dynamically...
         let args = Array.from(arguments);
@@ -36,7 +39,8 @@ class JsonPath {
             } else if (arg.constructor.name === Array.name) {
                 return JsonPath._getFromRawVals(arg);
             } else {
-                return JsonPath._getFromRawVal(arg);
+                // return JsonPath._getFromRawVal(arg);  // TODO can implement this as a separate getFromRawPath(str) static constructor
+                return JsonPath._getFromRawVals([arg])
             }
         } else {
             let arg0 = args[0];

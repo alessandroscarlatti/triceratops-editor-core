@@ -4,6 +4,8 @@
  */
 
 const JsonPathParser = require("../util/JsonPathParser").JsonPathParser;
+const JsonPath = require("../util/JsonPath").JsonPath;
+
 
     // TODO working on getting the instance controller filled with methods...
 
@@ -22,14 +24,13 @@ class InstanceController {
         this._setObjectValue = this._setObjectValue.bind(this);
         this._setArrayValue = this._setArrayValue.bind(this);
         this._getChildPath = this._getChildPath.bind(this);
-
-        let pathParser = new JsonPathParser(path);
+        this.toString = this.toString.bind(this);
 
         this._path = path;
-        this._name = pathParser.getName();
+        this._name = path.name;
         this._context = context;
         this._type = null;
-        this._parentPath = pathParser.getParentPath();
+        this._parentPath = path.parent;
         this._childPaths = [];
         this._atomicValue = undefined;
         this._properties = {};
@@ -78,7 +79,7 @@ class InstanceController {
      * @param value the new value for the field this controlle represents.
      */
     set value(value) {
-        if (this._isInstanceAtomic(value)) {
+        if (InstanceController._isInstanceAtomic(value)) {
             this._atomicValue = value;
             this._type = "VALUE_TYPE";
         } else {
@@ -97,7 +98,7 @@ class InstanceController {
     _setObjectValue(obj) {
         for (let p in obj) {
             if (obj.hasOwnProperty(p)) {
-                let childPath = this._getChildPath(p);
+                let childPath = JsonPath.get(this._path, p);
                 this._context.putAt(childPath, obj[p]);
                 this._childPaths.push(childPath);
             }
@@ -114,8 +115,12 @@ class InstanceController {
         }
     }
 
-    _setArrayValue() {
-
+    _setArrayValue(arr) {
+        for (let i = 0; i < arr.length; i++) {
+            let childPath = JsonPath.get(this._path, i);
+            this._context.putAt(childPath, arr[i]);
+            this._childPaths.push(childPath);
+        }
     }
 
     _buildObject() {
@@ -132,10 +137,19 @@ class InstanceController {
     }
 
     _buildArray() {
+        let arr = [];
+        for (let i = 0; i < this._childPaths.length; i++) {
+            let path = this._childPaths[i];
+            let ctrl = this._context.getAt(path);
+            let value = ctrl.value;
+            let name = ctrl.name;
+            arr[name] = value;
+        }
 
+        return arr;
     }
 
-    _isInstanceAtomic(inst) {
+    static _isInstanceAtomic(inst) {
         if (inst.constructor.name !== "Object" && inst.constructor.name !== "Array") {
             return true;
         } else {
@@ -182,6 +196,15 @@ class InstanceController {
             ARRAY_TYPE: "ARRAY_TYPE",
             VALUE_TYPE: "VALUE_TYPE",
         }
+    }
+
+    toString() {
+        let str = "InstanceController(";
+
+        str += this._path + ")";
+        str += "[" + this._childPaths + "]";
+
+        return str;
     }
 }
 

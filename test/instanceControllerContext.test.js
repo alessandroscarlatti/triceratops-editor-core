@@ -1,3 +1,0 @@
-describe("InstanceControllerContext tests", function() {
-
-});

@@ -15,6 +15,7 @@ suite("test instance controller methods", function () {
             {
                 firstName: "Theodor",
                 lastName: "Lesieg",
+                suffix: "II",
             },
             {
                 firstName: "Mary",
@@ -336,7 +337,7 @@ suite("test instance controller methods", function () {
         console.log("context after update", ctx.controllers.map((i) => i.path.toString()));
 
         assert.deepEqual(ctrl.value, newValue);
-    })
+    });
 
     test("update array instance", function () {
         let path = JsonPath.get("sillyArrayInstance");
@@ -358,5 +359,45 @@ suite("test instance controller methods", function () {
         console.log("context after update", ctx.controllers.map((i) => i.path.toString()));
 
         assert.deepEqual(ctrl.value, newValue);
-    })
+    });
+
+    test("update deep object instance", function () {
+        let path = JsonPath.get("sillyObjectInstance");
+        ctx.putAt(path, DEEP_OBJ_INST);
+        console.log("context before update", ctx.controllers.map((i) => i.path.toString()));
+        assert.ok(ctx.getAt(JsonPath.get(path, "authors", 0, "suffix")));
+
+        let ctrl = ctx.getAt(JsonPath.get(path,  "authors", 0));
+        let newValue = {
+            firstName: "Theodor",
+            middleName: "Thomas",
+            lastName: "Quater",
+        };
+        ctrl.value = newValue;
+
+        console.log("context after update", ctx.controllers.map((i) => i.path.toString()));
+
+        assert.deepEqual(ctrl.value, newValue);
+        assert.ok(!ctx.getAt(JsonPath.get(path, "authors", 0, "suffix")));
+    });
+
+    test("update deep array instance", function () {
+        let path = JsonPath.get("sillyObjectInstance");
+        ctx.putAt(path, DEEP_ARR_INST);
+        console.log("context before update", ctx.controllers.map((i) => i.path.toString()));
+        assert.ok(ctx.getAt(JsonPath.get(path, 0, 0, "data")));
+
+        let ctrl = ctx.getAt(JsonPath.get(path, 0, 0));
+        let newValue = {
+            firstName: "Theodor",
+            middleName: "Thomas",
+            lastName: "Quater",
+        };
+        ctrl.value = newValue;
+
+        console.log("context after update", ctx.controllers.map((i) => i.path.toString()));
+
+        assert.deepEqual(ctrl.value, newValue);
+        assert.ok(!ctx.getAt(JsonPath.get(path, 0, 0, "data")));
+    });
 });

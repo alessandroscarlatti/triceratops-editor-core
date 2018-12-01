@@ -31,6 +31,10 @@ class ValueInObjectInstance extends ValueInstance {
     _addSelfAsJsInstance(workingObj) {
         workingObj[this.instanceNm] = this.instanceVal;
     }
+
+    _toJsInstance() {
+        return this.instanceVal;
+    }
 }
 
 class ArrayInstance {
@@ -120,6 +124,12 @@ class ArrayInObjectInstance extends ArrayInstance{
 
         workingJsObj[this.instanceNm] = selfJsArray;
     }
+
+    _toJsInstance() {
+        let self = {};
+        this._addSelfAsJsInstance(self);
+        return self[this.instanceNm];
+    }
 }
 
 class ObjectInstance {
@@ -154,6 +164,13 @@ class ObjectInArrayInstance extends ObjectInstance {
         )
     }
 
+    putObject(fieldNm, configFunc) {
+        this.childFieldsInstancesMap[fieldNm] = new ObjectInObjectInstance(
+            fieldNm,
+            configFunc
+        )
+    }
+
     _addSelfAsJsInstance(workingJsObj) {
         let selfJsObject = {};
         for (let childFieldNm in this.childFieldsInstancesMap) {
@@ -164,14 +181,6 @@ class ObjectInArrayInstance extends ObjectInstance {
 
         workingJsObj[this.instanceIndex] = selfJsObject;
     }
-
-
-    toJsInstance() {
-        let self = {};
-        this._addSelfAsJsInstance(self);
-        return self[this.instanceNm];
-    }
-
 }
 
 class ObjectInObjectInstance extends ObjectInstance {
@@ -203,6 +212,13 @@ class ObjectInObjectInstance extends ObjectInstance {
         )
     }
 
+    putObject(fieldNm, configFunc) {
+        this.childFieldsInstancesMap[fieldNm] = new ObjectInObjectInstance(
+            fieldNm,
+            configFunc
+        )
+    }
+
     _addSelfAsJsInstance(workingJsObj) {
         let selfJsObject = {};
         for (let childFieldNm in this.childFieldsInstancesMap) {
@@ -214,8 +230,7 @@ class ObjectInObjectInstance extends ObjectInstance {
         workingJsObj[this.instanceNm] = selfJsObject;
     }
 
-
-    toJsInstance() {
+    _toJsInstance() {
         let self = {};
         this._addSelfAsJsInstance(self);
         return self[this.instanceNm];
@@ -223,15 +238,45 @@ class ObjectInObjectInstance extends ObjectInstance {
 }
 
 // could be a class that contains a value, array, or object instance.
-class BackingStore {
+class JsInstance {
+}
 
+class JsValueInstance extends JsInstance {
+
+    constructor(value, metaObj) {
+        super();
+        this.valueInstance = new ValueInObjectInstance("$", value, metaObj)
+    }
+
+    toJsInstance() {
+        return this.valueInstance._toJsInstance()
+    }
+}
+
+class JsObjectInstance extends JsInstance {
+    constructor(configFunc) {
+        super();
+        this.objectInstance = new ObjectInObjectInstance("$", configFunc);
+    }
+
+    toJsInstance() {
+        return this.objectInstance._toJsInstance()
+    }
+}
+
+class JsArrayInstance extends JsInstance {
+    constructor(configFunc) {
+        super();
+        this.arrayInstance = new ArrayInObjectInstance("$", configFunc);
+    }
+
+    toJsInstance() {
+        return this.arrayInstance._toJsInstance()
+    }
 }
 
 module.exports = {
-    ValueInArrayInstance,
-    ValueInObjectInstance,
-    ArrayInArrayInstance,
-    ArrayInObjectInstance,
-    ObjectInArrayInstance,
-    ObjectInObjectInstance
+    JsValueInstance,
+    JsArrayInstance,
+    JsObjectInstance
 };

@@ -5,7 +5,7 @@ describe("TriceratopsCore", () => {
     it("can add a controller", () => {
         let trc = new TriceratopsCore();
 
-        trc.setRootEmptyObject();
+        trc._setRootEmptyObject();
         trc.createValueNode("$", "name", "Charlotte");
         trc.updateMetaData("$[name]", meta => {
             meta.description = "the penguin's name";
@@ -29,5 +29,61 @@ describe("TriceratopsCore", () => {
                 "char", "squash"
             ]
         });
+    });
+
+    it("can use builder syntax", () => {
+        let trc = new TriceratopsCore();
+
+        trc._setRootEmptyObject();
+        trc.with("$", $ => {
+            $.putValue("name", "Phil", {
+                description: "penguin name"
+            });
+            $.putValue("age", 2, {
+                description: "penguin age"
+            });
+            $.putObject("address", address => {
+                address.putValue("street", "123 Sesame")
+            })
+        });
+
+        assert.deepEqual(trc.getJsInstance(), {
+            name: "Phil",
+            age: 2,
+            address: {
+                street: "123 Sesame"
+            }
+        })
+    });
+
+    it("can retrieve metadata", () => {
+        let trc = new TriceratopsCore();
+
+        trc.putObject();
+        assert.deepEqual(trc.getJsInstance(), {});
+
+        trc.putArray();
+        assert.deepEqual(trc.getJsInstance(), []);
+
+        trc.putValue("asdf");
+        assert.deepEqual(trc.getJsInstance(), "asdf");
+
+        trc.putObject($ => {
+            $.putValue("name", "Phil", {
+                description: "penguin name"
+            });
+            $.putValue("age", 2, {
+                description: "penguin age"
+            });
+            $.putObject("address", address => {
+                address.putValue("street", "123 Sesame")
+            });
+            $.putArray("nicknames");
+            $.putValue("stuff")
+        });
+
+        assert.deepEqual(trc.getMeta("$[name]"), {
+            description: "penguin name"
+        })
     })
 });

@@ -1,4 +1,19 @@
 /**
+ * Utilities
+ */
+const createSimplePath = function(parent, child) {
+    return parent + "[" + child + "]";
+};
+
+const copyPropertiesFromTo = function(from, to) {
+    for(let key in from){
+        if (from.hasOwnProperty(key)) {
+            to[key] = from[key]
+        }
+    }
+};
+
+/**
  * Instance to keep track of accessors
  */
 class AccessorFuncMap {
@@ -16,7 +31,7 @@ class AccessorFuncMap {
             }
         }
         else {
-            let key = parentPath + "[" + accessorNm + "]";
+            let key = createSimplePath(parentPath, accessorNm);
             this._accessorFuncMap[key] = () => {
                 let jsParentInstance = this.getAccessorFunc(parentPath)();
                 return jsParentInstance[accessorNm]
@@ -66,6 +81,10 @@ class MetaDataMap {
         configFunc(metaObj);
     }
 
+    get(path) {
+        return this._metadataMap[path];
+    }
+
     clear() {
         this._metadataMap = {};
     }
@@ -99,31 +118,46 @@ class TriceratopsInstanceBuilderHelper {
         this._trc = trc;
     }
 
-    updateMeta(configFunc) {
-        this._trc.updateMetaData(this._parentPath, configFunc);
+    putMeta(configFuncOrMetaObj) {
+        if (configFuncOrMetaObj.constructor.name === "Function") {
+            this._trc.updateMetaData(this._parentPath, configFuncOrMetaObj);
+        }
+        else {
+            this._trc.updateMetaData(this._parentPath, (metaObj) => {
+                for(let key in configFuncOrMetaObj){
+                    if (configFuncOrMetaObj.hasOwnProperty(key)) {
+                        metaObj[key] = configFuncOrMetaObj[key]
+                    }
+                }
+            })
+        }
     }
 
     putValue(accessorNm, value, metaObjParam) {
         this._trc.createValueNode(this._parentPath, accessorNm, value);
-        this._trc.updateMetaData(this._parentPath + "[" + accessorNm + "]", metaObj => {
-            for(let key in metaObjParam){
-                if (metaObjParam.hasOwnProperty(key)) {
-                    metaObj[key] = metaObjParam[key]
-                }
-            }
+        let childPath = createSimplePath(this._parentPath, accessorNm);
+        this._trc.updateMetaData(childPath, metaObj => {
+            copyPropertiesFromTo(metaObjParam, metaObj);
         })
     }
 
     putArray(accessorNm, configFunc) {
         this._trc.createEmptyArrayNode(this._parentPath, accessorNm);
-        let arrayHelper = new TriceratopsInstanceBuilderHelper(this._parentPath + "[" + accessorNm + "]", this._trc);
-        configFunc(arrayHelper);
+        let childPath = createSimplePath(this._parentPath, accessorNm);
+        let arrayHelper = new TriceratopsInstanceBuilderHelper(childPath, this._trc);
+
+        if (configFunc != null) {
+            configFunc(arrayHelper);
+        }
     }
 
     putObject(accessorNm, configFunc) {
         this._trc.createEmptyObjectNode(this._parentPath, accessorNm);
-        let objectHelper = new TriceratopsInstanceBuilderHelper(this._parentPath + "[" + accessorNm + "]", this._trc);
-        configFunc(objectHelper);
+        let childPath = createSimplePath(this._parentPath, accessorNm);
+        let objectHelper = new TriceratopsInstanceBuilderHelper(childPath, this._trc);
+        if (configFunc != null) {
+            configFunc(objectHelper);
+        }
     }
 }
 
@@ -142,21 +176,21 @@ class TriceratopsCore {
         this._metadataMap.clear();
     }
 
-    setRootValue(value) {
+    _setRootValue(value) {
         this.clear();
         this._targetJsInstance.setJsInstance(value);
         this._accessorFuncMap.createAccessorFunc();
         this._metadataMap.create("$");
     }
 
-    setRootEmptyArray() {
+    _setRootEmptyArray() {
         this.clear();
         this._targetJsInstance.setJsInstance([]);
         this._accessorFuncMap.createAccessorFunc();
         this._metadataMap.create("$");
     }
 
-    setRootEmptyObject() {
+    _setRootEmptyObject() {
         this.clear();
         this._targetJsInstance.setJsInstance({});
         this._accessorFuncMap.createAccessorFunc();
@@ -171,28 +205,70 @@ class TriceratopsCore {
     createValueNode(parentPath, accessorNm, value) {
         this._accessorFuncMap.createAccessorFunc(parentPath, accessorNm);
         this._accessorFuncMap.getAccessorFunc(parentPath)()[accessorNm] = value;
-        this._metadataMap.create(parentPath + "[" + accessorNm + "]");
+        this._metadataMap.create(createSimplePath(parentPath, accessorNm));
     }
 
     // for creating an object node in an array, accessorNm should be the index
     createEmptyObjectNode(parentPath, accessorNm) {
         this._accessorFuncMap.createAccessorFunc(parentPath, accessorNm);
         this._accessorFuncMap.getAccessorFunc(parentPath)()[accessorNm] = {};
-        this._metadataMap.create(parentPath + "[" + accessorNm + "]");
+        this._metadataMap.create(createSimplePath(parentPath, accessorNm));
     }
 
     // for creating an array node in an array, accessorNm should be the index
     createEmptyArrayNode(parentPath, accessorNm) {
         this._accessorFuncMap.createAccessorFunc(parentPath, accessorNm);
         this._accessorFuncMap.getAccessorFunc(parentPath)()[accessorNm] = [];
-        this._metadataMap.create(parentPath + "[" + accessorNm + "]");
+        this._metadataMap.create(createSimplePath(parentPath, accessorNm));
     }
 
     getJsInstance(path) {
         return this._accessorFuncMap.getAccessorFunc(path)();
     }
 
-    // todo create entry point function for builder helper.
+    getMeta(path) {
+        return this._metadataMap.get(path);
+    }
+
+    putValue(value, configFuncOrMetaObj) {
+        this._setRootValue(value);
+
+        if (configFuncOrMetaObj == null) {
+            return;
+        }
+
+        if (configFuncOrMetaObj.constructor.name === "Function") {
+            this.updateMetaData("$", configFuncOrMetaObj);
+        }
+        else {
+            this.updateMetaData("$", (metaObj) => {
+                copyPropertiesFromTo(configFuncOrMetaObj, metaObj);
+            })
+        }
+    }
+
+    putArray(configFunc) {
+        this._setRootEmptyArray();
+        let builderHelper = new TriceratopsInstanceBuilderHelper("$", this);
+
+        if (configFunc != null) {
+            configFunc(builderHelper);
+        }
+    }
+
+    putObject(configFunc) {
+        this._setRootEmptyObject();
+        let builderHelper = new TriceratopsInstanceBuilderHelper("$", this);
+
+        if (configFunc != null) {
+            configFunc(builderHelper);
+        }
+    }
+
+    with(path, configFunc) {
+        let builderHelper = new TriceratopsInstanceBuilderHelper(path, this);
+        configFunc(builderHelper);
+    }
 }
 
 exports.default = TriceratopsCore;

@@ -82,8 +82,15 @@ describe("TriceratopsCore", () => {
             $.putValue("stuff")
         });
 
+        trc.with("$[nicknames]", nicknames => {
+            nicknames.putNextValue("char");
+            nicknames.putNextValue("squash");
+        });
+
         assert.deepEqual(trc.getMeta("$[name]"), {
             description: "penguin name"
-        })
+        });
+
+        assert.deepEqual(trc.getJsInstance("$[nicknames]"), ["char", "squash"])
     })
 });

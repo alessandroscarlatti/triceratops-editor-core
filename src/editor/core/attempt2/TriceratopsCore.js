@@ -1,12 +1,12 @@
 /**
  * Utilities
  */
-const createSimplePath = function(parent, child) {
+const createSimplePath = function (parent, child) {
     return parent + "[" + child + "]";
 };
 
-const copyPropertiesFromTo = function(from, to) {
-    for(let key in from){
+const copyPropertiesFromTo = function (from, to) {
+    for (let key in from) {
         if (from.hasOwnProperty(key)) {
             to[key] = from[key]
         }
@@ -20,7 +20,8 @@ class AccessorFuncMap {
     constructor(targetJsInstance) {
         this._accessorFuncMap = {};
         this._targetJsInstance = targetJsInstance;
-        this._returnUndefinedFunc = function(){};
+        this._returnUndefinedFunc = function () {
+        };
     }
 
     createAccessorFunc(parentPath, accessorNm) {
@@ -108,11 +109,11 @@ class TargetJsInstance {
 }
 
 /**
- * Instance to help build data.
+ * Instance to help build objects.
  * The instance is preloaded with a parent context, so that methods
  * do not need to specify a parent path.
  */
-class TriceratopsInstanceBuilderHelper {
+class TriceratopsObjectBuilderHelper {
     constructor(parentPath, trc) {
         this._parentPath = parentPath;
         this._trc = trc;
@@ -124,7 +125,7 @@ class TriceratopsInstanceBuilderHelper {
         }
         else {
             this._trc.updateMetaData(this._parentPath, (metaObj) => {
-                for(let key in configFuncOrMetaObj){
+                for (let key in configFuncOrMetaObj) {
                     if (configFuncOrMetaObj.hasOwnProperty(key)) {
                         metaObj[key] = configFuncOrMetaObj[key]
                     }
@@ -144,7 +145,7 @@ class TriceratopsInstanceBuilderHelper {
     putArray(accessorNm, configFunc) {
         this._trc.createEmptyArrayNode(this._parentPath, accessorNm);
         let childPath = createSimplePath(this._parentPath, accessorNm);
-        let arrayHelper = new TriceratopsInstanceBuilderHelper(childPath, this._trc);
+        let arrayHelper = new TriceratopsArrayBuilderHelper(childPath, this._trc);
 
         if (configFunc != null) {
             configFunc(arrayHelper);
@@ -154,10 +155,36 @@ class TriceratopsInstanceBuilderHelper {
     putObject(accessorNm, configFunc) {
         this._trc.createEmptyObjectNode(this._parentPath, accessorNm);
         let childPath = createSimplePath(this._parentPath, accessorNm);
-        let objectHelper = new TriceratopsInstanceBuilderHelper(childPath, this._trc);
+        let objectHelper = new TriceratopsObjectBuilderHelper(childPath, this._trc);
         if (configFunc != null) {
             configFunc(objectHelper);
         }
+    }
+}
+
+/**
+ * Instance to help build objects.
+ * The instance is preloaded with a parent context, so that methods
+ * do not need to specify a parent path.
+ */
+class TriceratopsArrayBuilderHelper extends TriceratopsObjectBuilderHelper {
+    constructor(parentPath, trc) {
+        super(parentPath, trc);
+    }
+
+    putNextValue(value, metaObj) {
+        let i = this._trc.getJsInstance(this._parentPath).length;
+        super.putValue(i, value, metaObj);
+    }
+
+    putNextArray(configFunc) {
+        let i = this._trc.getJsInstance(this._parentPath).length;
+        super.putArray(i, value, configFunc);
+    }
+
+    putNextObject(configFunc) {
+        let i = this._trc.getJsInstance(this._parentPath).length;
+        super.putObject(i, value, configFunc);
     }
 }
 
@@ -249,7 +276,7 @@ class TriceratopsCore {
 
     putArray(configFunc) {
         this._setRootEmptyArray();
-        let builderHelper = new TriceratopsInstanceBuilderHelper("$", this);
+        let builderHelper = new TriceratopsArrayBuilderHelper("$", this);
 
         if (configFunc != null) {
             configFunc(builderHelper);
@@ -258,7 +285,7 @@ class TriceratopsCore {
 
     putObject(configFunc) {
         this._setRootEmptyObject();
-        let builderHelper = new TriceratopsInstanceBuilderHelper("$", this);
+        let builderHelper = new TriceratopsObjectBuilderHelper("$", this);
 
         if (configFunc != null) {
             configFunc(builderHelper);
@@ -266,7 +293,17 @@ class TriceratopsCore {
     }
 
     with(path, configFunc) {
-        let builderHelper = new TriceratopsInstanceBuilderHelper(path, this);
+
+        let jsInstance = this.getJsInstance(path);
+
+        let builderHelper;
+        if (jsInstance.constructor.name === "Array") {
+            builderHelper = new TriceratopsArrayBuilderHelper(path, this);
+        }
+        else {
+            builderHelper = new TriceratopsObjectBuilderHelper(path, this);
+        }
+
         configFunc(builderHelper);
     }
 }

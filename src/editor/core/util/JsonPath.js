@@ -39,7 +39,7 @@ class JsonPath {
             } else if (arg.constructor.name === Array.name) {
                 return JsonPath._getFromRawVals(arg);
             } else {
-                // return JsonPath._getFromRawVal(arg);  // TODO can implement this as a separate getFromRawPath(str) static constructor
+                // return JsonPath._getFromRawVal(arg);  // TODO (confirmed 12-1-2018 can implement this as a separate getFromRawPath(str) static constructor
                 return JsonPath._getFromRawVals([arg])
             }
         } else {

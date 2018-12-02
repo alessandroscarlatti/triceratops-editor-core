@@ -92,5 +92,46 @@ describe("TriceratopsCore", () => {
         });
 
         assert.deepEqual(trc.getJsInstance("$[nicknames]"), ["char", "squash"])
-    })
+    });
+
+    it("can remove node", () => {
+        let trc = new TriceratopsCore();
+
+        trc.putObject($ => {
+            $.putValue("name", "Phil", {
+                description: "penguin name"
+            });
+            $.putValue("age", 2, {
+                description: "penguin age"
+            });
+            $.putObject("address", address => {
+                address.putValue("street", "123 Sesame")
+            });
+            $.putArray("nicknames", nicknames => {
+                nicknames.putNextValue("char", {
+                    description: "char desc"
+                });
+                nicknames.putNextValue("squash", {
+                    description: "squash desc"
+                });
+            });
+            $.putValue("stuff");
+        });
+
+        assert.equal(2, trc.getJsInstance("$[nicknames]").length);
+
+        trc.removeNodeRecursive("$[address]");
+        assert.equal(trc.getJsInstance("$[name]"), "Phil");
+        assert.equal(trc.getJsInstance("$[address]"), undefined);
+
+        trc.removeNodeRecursive("$[nicknames][0]");
+        assert.equal(trc.getJsInstance("$[nicknames][0]"), "char");
+        assert.deepEqual(trc.getMeta("$[nicknames][0]"), {
+            description: "char desc"
+        });
+        assert.equal(trc.getJsInstance("$[nicknames][1]"), undefined);
+
+        trc.removeNodeRecursive("$[nicknames]");
+        assert.equal(trc.getJsInstance("$[nicknames]"), undefined);
+    });
 });

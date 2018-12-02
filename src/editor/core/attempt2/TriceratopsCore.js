@@ -1,3 +1,5 @@
+const JsonPathParser = require("../util/JsonPathParser").JsonPathParser;
+
 /**
  * Utilities
  */
@@ -10,6 +12,20 @@ const copyPropertiesFromTo = function (from, to) {
         if (from.hasOwnProperty(key)) {
             to[key] = from[key]
         }
+    }
+};
+
+const instanceType = function (jsInstance) {
+    if (Array.isArray(jsInstance)) {
+        return "Array";
+    }
+
+    if (jsInstance.constructor.name === "Object") {
+        return "Object";
+    }
+
+    else {
+        return "Value";
     }
 };
 
@@ -56,8 +72,12 @@ class AccessorFuncMap {
         }
     }
 
-    clear() {
+    removeAll() {
         this._accessorFuncMap = {};
+    }
+
+    removeAccessorFunc(path) {
+        delete this._accessorFuncMap[path];
     }
 }
 
@@ -69,7 +89,7 @@ class MetaDataMap {
         this._metadataMap = {};
     }
 
-    create(path, configFunc) {
+    createMeta(path, configFunc) {
         this._metadataMap[path] = {};
 
         if (configFunc != null) {
@@ -77,17 +97,33 @@ class MetaDataMap {
         }
     }
 
-    update(path, configFunc) {
+    setMeta(path, metaObj) {
+        this._metadataMap[path] = metaObj;
+    }
+
+    updateMeta(path, configFunc) {
         let metaObj = this._metadataMap[path];
         configFunc(metaObj);
     }
 
-    get(path) {
+    getMeta(path) {
         return this._metadataMap[path];
     }
 
-    clear() {
+    clearMeta(path) {
+        for (let key in this._metadataMap[path]) {
+            if (this._metadataMap[path].hasOwnProperty(key)) {
+                delete this._metadataMap[key];
+            }
+        }
+    }
+
+    removeAll() {
         this._metadataMap = {};
+    }
+
+    removeMeta(path) {
+        delete this._metadataMap[path];
     }
 }
 
@@ -199,54 +235,54 @@ class TriceratopsCore {
     }
 
     clear() {
-        this._accessorFuncMap.clear();
-        this._metadataMap.clear();
+        this._accessorFuncMap.removeAll();
+        this._metadataMap.removeAll();
     }
 
     _setRootValue(value) {
         this.clear();
         this._targetJsInstance.setJsInstance(value);
         this._accessorFuncMap.createAccessorFunc();
-        this._metadataMap.create("$");
+        this._metadataMap.createMeta("$");
     }
 
     _setRootEmptyArray() {
         this.clear();
         this._targetJsInstance.setJsInstance([]);
         this._accessorFuncMap.createAccessorFunc();
-        this._metadataMap.create("$");
+        this._metadataMap.createMeta("$");
     }
 
     _setRootEmptyObject() {
         this.clear();
         this._targetJsInstance.setJsInstance({});
         this._accessorFuncMap.createAccessorFunc();
-        this._metadataMap.create("$");
+        this._metadataMap.createMeta("$");
     }
 
     updateMetaData(path, configFunc) {
-        this._metadataMap.update(path, configFunc);
+        this._metadataMap.updateMeta(path, configFunc);
     }
 
     // for creating a value node in an array, accessorNm should be the index
     createValueNode(parentPath, accessorNm, value) {
         this._accessorFuncMap.createAccessorFunc(parentPath, accessorNm);
         this._accessorFuncMap.getAccessorFunc(parentPath)()[accessorNm] = value;
-        this._metadataMap.create(createSimplePath(parentPath, accessorNm));
+        this._metadataMap.createMeta(createSimplePath(parentPath, accessorNm));
     }
 
     // for creating an object node in an array, accessorNm should be the index
     createEmptyObjectNode(parentPath, accessorNm) {
         this._accessorFuncMap.createAccessorFunc(parentPath, accessorNm);
         this._accessorFuncMap.getAccessorFunc(parentPath)()[accessorNm] = {};
-        this._metadataMap.create(createSimplePath(parentPath, accessorNm));
+        this._metadataMap.createMeta(createSimplePath(parentPath, accessorNm));
     }
 
     // for creating an array node in an array, accessorNm should be the index
     createEmptyArrayNode(parentPath, accessorNm) {
         this._accessorFuncMap.createAccessorFunc(parentPath, accessorNm);
         this._accessorFuncMap.getAccessorFunc(parentPath)()[accessorNm] = [];
-        this._metadataMap.create(createSimplePath(parentPath, accessorNm));
+        this._metadataMap.createMeta(createSimplePath(parentPath, accessorNm));
     }
 
     getJsInstance(path) {
@@ -254,7 +290,7 @@ class TriceratopsCore {
     }
 
     getMeta(path) {
-        return this._metadataMap.get(path);
+        return this._metadataMap.getMeta(path);
     }
 
     putValue(value, configFuncOrMetaObj) {
@@ -293,11 +329,9 @@ class TriceratopsCore {
     }
 
     with(path, configFunc) {
-
         let jsInstance = this.getJsInstance(path);
-
         let builderHelper;
-        if (jsInstance.constructor.name === "Array") {
+        if (Array.isArray(jsInstance)) {
             builderHelper = new TriceratopsArrayBuilderHelper(path, this);
         }
         else {
@@ -305,6 +339,117 @@ class TriceratopsCore {
         }
 
         configFunc(builderHelper);
+    }
+
+    _removeInstanceFromParentObject(path) {
+        this._accessorFuncMap.removeAccessorFunc(path);
+        this._metadataMap.removeMeta(path);
+
+        let parser = new JsonPathParser(path);
+
+        let parentPath = parser.getParentPath();
+        let parentNode = this.getJsInstance(parentPath);
+        delete parentNode[parser.getName()]
+    }
+
+    _removeInstanceFromParentArray(path) {
+        // clean up any orphan accessors from the accessorFuncs map.
+        // this will always be the last accessor.
+        let parser = new JsonPathParser(path);
+        let parentPath = parser.getParentPath();
+        let parentJsInstance = this.getJsInstance(parentPath);
+        let arrSize = parentJsInstance.length;
+        let lastElementPath = createSimplePath(parentPath, arrSize - 1);
+        this._accessorFuncMap.removeAccessorFunc(lastElementPath);
+
+        // now reorg the metadata map
+        // find the range of indexes that need to be shifted left.
+        let elementToDeleteIndex = Number(parser.getName());
+        for (let i = elementToDeleteIndex + 1; i < arrSize; i++) {
+            let leftMetaPath = createSimplePath(parentPath, i);
+            let rightMetaPath = createSimplePath(parentPath, i + 1);
+            this._metadataMap.clearMeta(leftMetaPath);
+            let rightMeta = this._metadataMap.getMeta(rightMetaPath);
+            this._metadataMap.setMeta(leftMetaPath, rightMeta);
+        }
+        this._metadataMap.removeMeta(lastElementPath);
+
+        // fix the actual array
+        let newArr = this.getJsInstance(parentPath).filter((element, index) => {
+            return index === elementToDeleteIndex;
+        });
+
+        // replace the array parent of array (this will not work with a root list)
+        let parentParser = new JsonPathParser(parentPath);
+        let parentOfArray = this.getJsInstance(parentParser.getParentPath());
+        parentOfArray[parentParser.getName()] = newArr;
+    }
+
+    removeNodeRecursive(path) {
+        let jsParentInstance = this.getJsInstance(new JsonPathParser(path).getParentPath());
+
+        switch (instanceType(jsParentInstance)) {
+            case "Array":
+                this._removeNodeRecursiveInArray(path);
+                break;
+            case "Object":
+                this._removeNodeRecursiveInObject(path);
+                break;
+            default:
+                throw new Error("not supporting root case yet.");
+        }
+    }
+
+    _removeNodeRecursiveInArray(path) {
+        let jsInstance = this.getJsInstance(path);
+        switch (instanceType(jsInstance)) {
+            case "Value":
+                this._removeInstanceFromParentArray(path);
+                break;
+            case "Array":
+                // delete each child first
+                for (let i in jsInstance) {
+                    if (jsInstance.hasOwnProperty(i)) {
+                        this.removeNodeRecursive(createSimplePath(path, i));
+                    }
+                }
+                this._removeInstanceFromParentArray(path);
+                break;
+            case "Object":
+                for (let i in jsInstance) {
+                    if (jsInstance.hasOwnProperty(i)) {
+                        this.removeNodeRecursive(createSimplePath(path, i));
+                    }
+                }
+                this._removeInstanceFromParentArray(path);
+                break;
+        }
+    }
+
+    _removeNodeRecursiveInObject(path) {
+        let jsInstance = this.getJsInstance(path);
+        switch (instanceType(jsInstance)) {
+            case "Value":
+                this._removeInstanceFromParentObject(path);
+                break;
+            case "Array":
+                // delete each child first
+                for (let i = 0; i < jsInstance.length; i++) {
+                    this.removeNodeRecursive(createSimplePath(path, i));
+                }
+
+                this._removeInstanceFromParentObject(path);
+                break;
+            case "Object":
+                for (let i in jsInstance) {
+                    if (jsInstance.hasOwnProperty(i)) {
+                        this.removeNodeRecursive(createSimplePath(path, i));
+                    }
+                }
+
+                this._removeInstanceFromParentObject(path);
+                break;
+        }
     }
 }
 

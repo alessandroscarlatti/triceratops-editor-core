@@ -144,6 +144,23 @@ class TargetJsInstance {
     }
 }
 
+class PathTree {
+    constructor() {
+        this._pathTree = null;
+    }
+
+    setRootPath(path) {
+        this._pathTree = {
+            path: path,
+            children: []
+        };
+    }
+
+    getPathTree() {
+        return this._pathTree;
+    }
+}
+
 /**
  * Instance to help build objects.
  * The instance is preloaded with a parent context, so that methods
@@ -231,17 +248,20 @@ class TriceratopsCore {
     constructor() {
         this._metadataMap = new MetaDataMap();
         this._targetJsInstance = new TargetJsInstance();
+        this._pathTree = new PathTree();
         this._accessorFuncMap = new AccessorFuncMap(this._targetJsInstance);
     }
 
     clear() {
         this._accessorFuncMap.removeAll();
         this._metadataMap.removeAll();
+        this._targetJsInstance.setJsInstance(null)
     }
 
     _setRootValue(value) {
         this.clear();
         this._targetJsInstance.setJsInstance(value);
+        this._pathTree.
         this._accessorFuncMap.createAccessorFunc();
         this._metadataMap.createMeta("$");
     }
@@ -450,6 +470,20 @@ class TriceratopsCore {
                 this._removeInstanceFromParentObject(path);
                 break;
         }
+    }
+
+    /**
+     * {path, meta, children}
+     */
+    getTree(path) {
+        if (path == null) {
+            path = "$";
+        }
+
+        // use visitors
+        let jsInstance = this.getJsInstance(path);
+
+
     }
 }
 

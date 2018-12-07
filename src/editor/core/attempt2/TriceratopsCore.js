@@ -188,7 +188,7 @@ class TriceratopsObjectBuilderHelper {
     }
 
     putValue(accessorNm, value, metaObjParam) {
-        this._trc.createValueNode(this._parentPath, accessorNm, value);
+        this._trc.createValueNodeByPath(this._parentPath, accessorNm, value);
         let childPath = createSimplePath(this._parentPath, accessorNm);
         this._trc.updateMetaData(childPath, metaObj => {
             copyPropertiesFromTo(metaObjParam, metaObj);

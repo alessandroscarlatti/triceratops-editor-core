@@ -1,20 +1,26 @@
 class JsonPathParser {
 
     constructor(path) {
-        this._stripParentCrumb = this._stripParentCrumb.bind(this);
-        this._stripNextObjectOrArrayAccessor = this._stripNextObjectOrArrayAccessor.bind(this);
-        this._stripNextObjectAccessor = this._stripNextObjectAccessor.bind(this);
-        this._stripNextArrayAccessor = this._stripNextArrayAccessor.bind(this);
-        this._stripNextObjectOrArrayAccessor = this._stripNextObjectOrArrayAccessor.bind(this);
-        this.getParentPath = this.getParentPath.bind(this);
-        this._buildParentPathString = this._buildParentPathString.bind(this);
-        this._parse = this._parse.bind(this);
-        this.getAccessors = this.getAccessors.bind(this);
-
         this._path = path;
-        this._bc = [];
+        this._breadcrumbs = [];
+    }
 
+    parseAccessorsArr() {
         this._parse();
+        return this._getAccessors();
+    }
+
+    _getAccessors() {
+        if (this._breadcrumbs.length === 1)
+            return [];
+
+        let accs = [];
+
+        for (let i = 1; i < this._breadcrumbs.length; i++) {
+            accs.push(this._parseAccessor(this._breadcrumbs[i]));
+        }
+
+        return accs;
     }
 
     _parse() {
@@ -38,32 +44,7 @@ class JsonPathParser {
         }
     }
 
-    getAccessors() {
-        if (this._bc.length === 1)
-            return [];
-
-        let accs = [];
-
-        for (let i = 1; i < this._bc.length; i++) {
-            accs.push(JsonPathParser._parseAccessor(this._bc[i]));
-        }
-
-        return accs;
-    }
-
-    getParentPath() {
-        return this._buildParentPathString();
-    }
-
-    getName() {
-        // remove brackets
-        if (this._bc.length === 1)
-            return "$";
-
-        return JsonPathParser._parseAccessor(this._bc[this._bc.length - 1]);
-    }
-
-    static _parseAccessor(raw) {
+    _parseAccessor(raw) {
         let piece = raw.substring(0, 2);
         if (piece === "['") {
             return raw.substring(2, raw.length - 2);
@@ -74,19 +55,6 @@ class JsonPathParser {
         }
     }
 
-    _buildParentPathString() {
-        if (this._bc.length === 1)
-            return null;
-
-        let parent = "";
-
-        for (let i = 0; i < this._bc.length - 1; i++) {
-            parent += String(this._bc[i]);
-        }
-
-        return parent;
-    }
-
     /**
      * Strip the parent crumb off the path
      */
@@ -94,7 +62,7 @@ class JsonPathParser {
         if (!this._path.startsWith("$"))
             throw new Error(`bad path ${workingPath}`);
 
-        this._bc[0] = "$";
+        this._breadcrumbs[0] = "$";
 
         if (workingPath.length > 1)
             return workingPath.substring(1, workingPath.length);
@@ -108,7 +76,7 @@ class JsonPathParser {
         if (i === -1)
             throw new Error(`Invalid path at ${workingPath} for path ${this._path}`);
 
-        this._bc.push(workingPath.substring(0, i + 2));
+        this._breadcrumbs.push(workingPath.substring(0, i + 2));
         return workingPath.substring(i + 2, workingPath.length);
     }
 
@@ -118,7 +86,7 @@ class JsonPathParser {
         if (i === -1)
             throw new Error(`Invalid path at ${workingPath} for path ${this._path}`);
 
-        this._bc.push(workingPath.substring(0, i + 1));
+        this._breadcrumbs.push(workingPath.substring(0, i + 1));
         return workingPath.substring(i + 1, workingPath.length);
     }
 

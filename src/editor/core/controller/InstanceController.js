@@ -133,7 +133,7 @@ class InstanceController {
         this._type = "OBJECT_TYPE";
         for (let p in obj) {
             if (obj.hasOwnProperty(p)) {
-                let childPath = JsonPath.get(this._path, p);
+                let childPath = JsonPath.fromArr(this._path, p);
                 this._context.putAt(childPath, obj[p]);
                 this._childPaths.push(childPath);
             }
@@ -154,7 +154,7 @@ class InstanceController {
 
         for (let p in obj) {
             if (obj.hasOwnProperty(p)) {
-                let childPath = JsonPath.get(this._path, p);
+                let childPath = JsonPath.fromArr(this._path, p);
                 let childCtrl = this._context.getAt(childPath);
                 let childVal = obj[p];
                 if (childCtrl == null) {
@@ -185,7 +185,7 @@ class InstanceController {
         this._childPaths = [];
 
         for (let i = 0; i < arr.length; i++) {
-            let childPath = JsonPath.get(this._path, i);
+            let childPath = JsonPath.fromArr(this._path, i);
             let childCtrl = this._context.getAt(childPath);
             let childVal = arr[i];
             if (childCtrl == null) {
@@ -219,7 +219,7 @@ class InstanceController {
     _setArrayValue(arr) {
         this._type = "ARRAY_TYPE";
         for (let i = 0; i < arr.length; i++) {
-            let childPath = JsonPath.get(this._path, i);
+            let childPath = JsonPath.fromArr(this._path, i);
             this._context.putAt(childPath, arr[i]);
             this._childPaths.push(childPath);
         }

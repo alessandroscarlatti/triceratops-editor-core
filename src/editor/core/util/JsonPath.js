@@ -8,7 +8,6 @@ class JsonPath {
     }
 
     get name() {
-
         if (this.accessors.length === 0)
             return "$";
 
@@ -23,58 +22,54 @@ class JsonPath {
         if (this._accessors.length === 0)
             return this;
 
-        return JsonPath.get(this._accessors.slice(0, this._accessors.length - 1));
+        return JsonPath.fromArr(this._accessors.slice(0, this._accessors.length - 1));
+    }
+
+    resolve(...additionalAccessors) {
+        let newPath = JsonPath.fromPath(this);
+        for (let accessor of additionalAccessors) {
+            newPath._accessors.push(accessor)
+        }
+        return newPath;
+    }
+
+    static fromStr(str) {
+        let parser = new JsonPathParser(str);
+        return JsonPath.fromArr(parser.parseAccessorsArr());
     }
 
     /**
      * @return {JsonPath}
      */
-    static get() {
-        // evaluate arguments dynamically...
-        let args = Array.from(arguments);
-        if (args.length === 1) {
-            let arg = args[0];
-            if (arg.constructor.name === JsonPath.name) {
-                return JsonPath._getFromJsonPath(arg);
-            } else if (arg.constructor.name === Array.name) {
-                return JsonPath._getFromRawVals(arg);
-            } else {
-                // return JsonPath._getFromRawVal(arg);  // TODO (confirmed 12-1-2018 can implement this as a separate getFromRawPath(str) static constructor
-                return JsonPath._getFromRawVals([arg])
-            }
-        } else {
-            let arg0 = args[0];
-            if (arg0.constructor.name === JsonPath.name) {
-                let adtlArgs = args.slice(1, args.length);
-                return JsonPath._getFromJsonPathAndAdditionalVals(arg0, adtlArgs);
-            } else {
-                return JsonPath._getFromRawVals(args);
-            }
+    static fromArr(...accessors) {
+
+        if (accessors.length === 1 && accessors[0].constructor.name === "Array") {
+            return JsonPath._fromArr(accessors[0]);
         }
+
+        return JsonPath._fromArr(accessors);
     }
 
-    static _getFromRawVal(str) {
+    static _fromArr(accessorsArray) {
         let path = new JsonPath();
-        let parser = new JsonPathParser(str);
-        path._accessors = parser.getAccessors();
+
+        for (let accessor of accessorsArray) {
+            if (accessor.constructor.name !== "String" && accessor.constructor.name !== "Number") {
+                throw new Error("Invalid constructor " + accessor.constructor.name + " for path accessor : " + accessor + ".  Expected 'String' or 'Number'.");
+            }
+            path._accessors.push(accessor);
+        }
+
         return path;
     }
 
-    static _getFromRawVals(keys) {
-        let path = new JsonPath();
-        path._accessors = [...keys];
-        return path;
+    static fromPath(otherPath) {
+        return this._getFromPath(otherPath);
     }
 
-    static _getFromJsonPath(path) {
+    static _getFromPath(path) {
         let newPath = new JsonPath();
         newPath._accessors.push(...path.accessors);
-        return newPath;
-    }
-
-    static _getFromJsonPathAndAdditionalVals(path, keys) {
-        let newPath = new JsonPath();
-        newPath._accessors.push(...path.accessors, ...keys);
         return newPath;
     }
 
@@ -86,6 +81,15 @@ class JsonPath {
         }
 
         return str;
+    }
+
+    /**
+     * toString() for Node.
+     * @param depth
+     * @param opts
+     */
+    inspect(depth, opts) {
+        return this.toString();
     }
 }
 

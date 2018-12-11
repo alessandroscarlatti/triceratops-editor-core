@@ -367,16 +367,16 @@ class TriceratopsCore {
 
         let parser = new JsonPathParser(path);
 
-        let parentPath = parser.getParentPath();
+        let parentPath = parser._getParentPath();
         let parentNode = this.getJsInstance(parentPath);
-        delete parentNode[parser.getName()]
+        delete parentNode[parser._getName()]
     }
 
     _removeInstanceFromParentArray(path) {
         // clean up any orphan accessors from the accessorFuncs map.
         // this will always be the last accessor.
         let parser = new JsonPathParser(path);
-        let parentPath = parser.getParentPath();
+        let parentPath = parser._getParentPath();
         let parentJsInstance = this.getJsInstance(parentPath);
         let arrSize = parentJsInstance.length;
         let lastElementPath = createSimplePath(parentPath, arrSize - 1);
@@ -384,7 +384,7 @@ class TriceratopsCore {
 
         // now reorg the metadata map
         // find the range of indexes that need to be shifted left.
-        let elementToDeleteIndex = Number(parser.getName());
+        let elementToDeleteIndex = Number(parser._getName());
         for (let i = elementToDeleteIndex + 1; i < arrSize; i++) {
             let leftMetaPath = createSimplePath(parentPath, i);
             let rightMetaPath = createSimplePath(parentPath, i + 1);
@@ -401,12 +401,12 @@ class TriceratopsCore {
 
         // replace the array parent of array (this will not work with a root list)
         let parentParser = new JsonPathParser(parentPath);
-        let parentOfArray = this.getJsInstance(parentParser.getParentPath());
-        parentOfArray[parentParser.getName()] = newArr;
+        let parentOfArray = this.getJsInstance(parentParser._getParentPath());
+        parentOfArray[parentParser._getName()] = newArr;
     }
 
     removeNodeRecursive(path) {
-        let jsParentInstance = this.getJsInstance(new JsonPathParser(path).getParentPath());
+        let jsParentInstance = this.getJsInstance(new JsonPathParser(path)._getParentPath());
 
         switch (instanceType(jsParentInstance)) {
             case "Array":

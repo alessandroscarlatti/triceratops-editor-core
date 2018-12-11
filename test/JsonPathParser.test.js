@@ -72,9 +72,7 @@ describe("get parent path util returns parent path", function () {
                 console.log("parent", sc.parent);
                 console.log("name", sc.name);
                 console.log("accessors", sc.accessors);
-                assert.equal(new JsonPathParser(sc.child).getParentPath(), sc.parent);
-                assert.equal(new JsonPathParser(sc.child).getName(), sc.name);
-                assert.deepEqual(new JsonPathParser(sc.child).getAccessors(), sc.accessors);
+                assert.deepEqual(new JsonPathParser(sc.child).parseAccessorsArr(), sc.accessors);
             });
         });
     });
@@ -92,7 +90,7 @@ describe("get parent path util returns parent path", function () {
 
         invalidPaths.forEach(function(p) {
             it(`throws exception for bad path (${p})`, function() {
-                assert.throws(function() { new JsonPathParser(p).getParentPath() }, Error);
+                assert.throws(function() { new JsonPathParser(p).parseAccessorsArr() }, Error);
             });
         });
     });

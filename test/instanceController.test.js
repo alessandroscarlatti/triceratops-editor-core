@@ -57,7 +57,7 @@ suite("test instance controller methods", function () {
     });
 
     test("create and retrieve null instance", function () {
-        let path = JsonPath.get("author", "middleName");
+        let path = JsonPath.fromArr("author", "middleName");
         let value = null;
 
         ctx.putAt(path, value);
@@ -72,7 +72,7 @@ suite("test instance controller methods", function () {
     });
 
     test("error creating undefined instance", function () {
-        let path = JsonPath.get("author", "middleName");
+        let path = JsonPath.fromArr("author", "middleName");
         let value = undefined;
 
         assert.throws(() => {
@@ -81,7 +81,7 @@ suite("test instance controller methods", function () {
     });
 
     test("create and retrieve value instance", function () {
-        let path = JsonPath.get("author", "firstName");
+        let path = JsonPath.fromArr("author", "firstName");
         let value = "Theodor";
 
         ctx.putAt(path, value);
@@ -96,7 +96,7 @@ suite("test instance controller methods", function () {
     });
 
     test("store and retrieve object instance", function () {
-        let path = JsonPath.get("author");
+        let path = JsonPath.fromArr("author");
         let value = {
             firstName: "Theodor",
             lastName: "Lesieg",
@@ -111,13 +111,13 @@ suite("test instance controller methods", function () {
         assert.equal(ctrl.parentPath.toString(), "$");
         assert.equal(ctrl.numChildren, 2);
         assert.deepEqual(ctrl.childPaths.map((i) => i.toString()), [
-            JsonPath.get("author", "firstName").toString(),
-            JsonPath.get("author", "lastName").toString(),
+            JsonPath.fromArr("author", "firstName").toString(),
+            JsonPath.fromArr("author", "lastName").toString(),
         ]);
     });
 
     test("store and retrieve array instance", function () {
-        let path = JsonPath.get("titles");
+        let path = JsonPath.fromArr("titles");
         let value = [
             "Cat in the Hat",
             "Cat in the Hat Comes Back",
@@ -132,13 +132,13 @@ suite("test instance controller methods", function () {
         assert.equal(ctrl.parentPath.toString(), "$");
         assert.equal(ctrl.numChildren, 2);
         assert.deepEqual(ctrl.childPaths.map((i) => i.toString()), [
-            JsonPath.get("titles", "0").toString(),
-            JsonPath.get("titles", "1").toString(),
+            JsonPath.fromArr("titles", "0").toString(),
+            JsonPath.fromArr("titles", "1").toString(),
         ]);
     });
 
     test("store and retrieve deep object instance", function () {
-        let path = JsonPath.get("library");
+        let path = JsonPath.fromArr("library");
         let value = DEEP_OBJ_INST;
 
         ctx.putAt(path, value);
@@ -151,7 +151,7 @@ suite("test instance controller methods", function () {
     });
 
     test("store and retrieve deep array instance", function () {
-        let path = JsonPath.get("library");
+        let path = JsonPath.fromArr("library");
         let value = DEEP_ARR_INST;
 
         ctx.putAt(path, value);
@@ -164,7 +164,7 @@ suite("test instance controller methods", function () {
     });
 
     test("delete value instance", function () {
-        let path = JsonPath.get("sillyValueInstance");
+        let path = JsonPath.fromArr("sillyValueInstance");
         ctx.putAt(path, "sillyValue");
 
         // make sure that the path exists...
@@ -184,7 +184,7 @@ suite("test instance controller methods", function () {
     });
 
     test("delete null value instance", function () {
-        let path = JsonPath.get("sillyValueInstance");
+        let path = JsonPath.fromArr("sillyValueInstance");
         ctx.putAt(path, null);
 
         // make sure that the path exists...
@@ -204,7 +204,7 @@ suite("test instance controller methods", function () {
     });
 
     test("delete object instance", function () {
-        let path = JsonPath.get("sillyObjectInstance");
+        let path = JsonPath.fromArr("sillyObjectInstance");
         let value = {
             firstName: "Theodor",
             lastName: "Lesieg",
@@ -231,7 +231,7 @@ suite("test instance controller methods", function () {
     });
 
     test("delete array instance", function () {
-        let path = JsonPath.get("sillyArrayInstance");
+        let path = JsonPath.fromArr("sillyArrayInstance");
         let value = [
             "Cat in the Hat",
             "Cat in the Hat Comes Back",
@@ -258,7 +258,7 @@ suite("test instance controller methods", function () {
     });
 
     test("delete deep object instance", function () {
-        let path = JsonPath.get("sillyArrayInstance");
+        let path = JsonPath.fromArr("sillyArrayInstance");
         let value = DEEP_OBJ_INST;
         ctx.putAt(path, value);
 
@@ -282,7 +282,7 @@ suite("test instance controller methods", function () {
     });
 
     test("delete deep array instance", function () {
-        let path = JsonPath.get("sillyArrayInstance");
+        let path = JsonPath.fromArr("sillyArrayInstance");
         let value = DEEP_ARR_INST;
         ctx.putAt(path, value);
 
@@ -306,7 +306,7 @@ suite("test instance controller methods", function () {
     });
 
     test("update value instance", function () {
-        let path = JsonPath.get("sillyValueInstance");
+        let path = JsonPath.fromArr("sillyValueInstance");
         ctx.putAt(path, "sillyValue");
 
         let ctrl = ctx.getAt(path);
@@ -315,7 +315,7 @@ suite("test instance controller methods", function () {
     });
 
     test("update object instance", function () {
-        let path = JsonPath.get("sillyObjectInstance");
+        let path = JsonPath.fromArr("sillyObjectInstance");
         let value = {
             firstName: "Theodor",
             lastName: "Lesieg",
@@ -340,7 +340,7 @@ suite("test instance controller methods", function () {
     });
 
     test("update array instance", function () {
-        let path = JsonPath.get("sillyArrayInstance");
+        let path = JsonPath.fromArr("sillyArrayInstance");
         let value = [
             "Cat in the Hat",
             "Cat in the Hat Comes Back",
@@ -362,12 +362,12 @@ suite("test instance controller methods", function () {
     });
 
     test("update deep object instance", function () {
-        let path = JsonPath.get("sillyObjectInstance");
+        let path = JsonPath.fromArr("sillyObjectInstance");
         ctx.putAt(path, DEEP_OBJ_INST);
         console.log("context before update", ctx.controllers.map((i) => i.path.toString()));
-        assert.ok(ctx.getAt(JsonPath.get(path, "authors", 0, "suffix")));
+        assert.ok(ctx.getAt(JsonPath.fromArr(path, "authors", 0, "suffix")));
 
-        let ctrl = ctx.getAt(JsonPath.get(path,  "authors", 0));
+        let ctrl = ctx.getAt(JsonPath.fromArr(path,  "authors", 0));
         let newValue = {
             firstName: "Theodor",
             middleName: "Thomas",
@@ -378,16 +378,16 @@ suite("test instance controller methods", function () {
         console.log("context after update", ctx.controllers.map((i) => i.path.toString()));
 
         assert.deepEqual(ctrl.value, newValue);
-        assert.ok(!ctx.getAt(JsonPath.get(path, "authors", 0, "suffix")));
+        assert.ok(!ctx.getAt(JsonPath.fromArr(path, "authors", 0, "suffix")));
     });
 
     test("update deep array instance", function () {
-        let path = JsonPath.get("sillyObjectInstance");
+        let path = JsonPath.fromArr("sillyObjectInstance");
         ctx.putAt(path, DEEP_ARR_INST);
         console.log("context before update", ctx.controllers.map((i) => i.path.toString()));
-        assert.ok(ctx.getAt(JsonPath.get(path, 0, 0, "data")));
+        assert.ok(ctx.getAt(JsonPath.fromArr(path, 0, 0, "data")));
 
-        let ctrl = ctx.getAt(JsonPath.get(path, 0, 0));
+        let ctrl = ctx.getAt(JsonPath.fromArr(path, 0, 0));
         let newValue = {
             firstName: "Theodor",
             middleName: "Thomas",
@@ -398,6 +398,6 @@ suite("test instance controller methods", function () {
         console.log("context after update", ctx.controllers.map((i) => i.path.toString()));
 
         assert.deepEqual(ctrl.value, newValue);
-        assert.ok(!ctx.getAt(JsonPath.get(path, 0, 0, "data")));
+        assert.ok(!ctx.getAt(JsonPath.fromArr(path, 0, 0, "data")));
     });
 });

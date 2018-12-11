@@ -1,11 +1,11 @@
 const assert = require("assert");
 const JsonPath = require("../src/editor/core/util/JsonPath").JsonPath;
 describe("JsonPath test", function () {
-    describe.skip("create path from json path string", function () {
+    describe("create path from json path string", function () {
 
         let jp0 = "$['author']['firstName']";
         it(`path ${jp0} has correct accessors`, function () {
-            let path = JsonPath.get(jp0);
+            let path = JsonPath.fromStr(jp0);
             let accs = ["author", "firstName"];
             console.log("accessors", path.accessors);
             assert.deepEqual(path.accessors, accs);
@@ -13,7 +13,7 @@ describe("JsonPath test", function () {
 
         jp1 = "$['authors'][0]['firstName']";
         it(`path ${jp1} has correct accessors`, function () {
-            let path = JsonPath.get(jp1);
+            let path = JsonPath.fromStr(jp1);
             let accs = ["authors", "0", "firstName"];
             console.log("accessors", path.accessors);
             assert.deepEqual(path.accessors, accs);
@@ -21,18 +21,34 @@ describe("JsonPath test", function () {
 
         jp2 = "$";
         it(`path ${jp2} has correct accessors`, function () {
-            let path = JsonPath.get(jp2);
+            let path = JsonPath.fromStr(jp2);
             let accs = [];
             console.log("accessors", path.accessors);
             assert.deepEqual(path.accessors, accs);
         });
+
+        jp3 = "$[author][firstName]";
+        it(`path ${jp3} has correct accessors`, function() {
+            let path = JsonPath.fromStr(jp3);
+            let accs = ["author", "firstName"];
+            console.log("accessors", path.accessors);
+            assert.deepEqual(path.accessors, accs);
+        })
     });
 
     describe("create path from array of accessors", function () {
         arr0 = ["authors", "0", "firstName"];
         it(`path ${arr0} has correct accessors`, function () {
-            let path = JsonPath.get(arr0);
+            let path = JsonPath.fromArr(arr0);
             let accs = ["authors", "0", "firstName"];
+            console.log("accessors", path.accessors);
+            assert.deepEqual(path.accessors, accs);
+        });
+
+        arr1 = ["authors", "1", "firstName"];
+        it(`path ${arr1} has correct accessors`, function () {
+            let path = JsonPath.fromArr("authors", "1", "firstName");
+            let accs = ["authors", "1", "firstName"];
             console.log("accessors", path.accessors);
             assert.deepEqual(path.accessors, accs);
         });
@@ -40,13 +56,21 @@ describe("JsonPath test", function () {
 
     describe("create path from path and additional accessors", function() {
         let origPathAccs = ["authors", "0"];
-        let origPath = JsonPath.get(origPathAccs);
+        let origPath = JsonPath.fromArr(origPathAccs);
 
         it(`add to orig path ${origPath}`, function () {
             let newAcc = "firstName";
-            let newPath = JsonPath.get(origPath, newAcc);
+            let newPath = JsonPath.fromPath(origPath).resolve(newAcc);
 
             let expAccs = [...origPathAccs, newAcc];
+            console.log("accessors", newPath.accessors);
+            assert.deepEqual(newPath.accessors, expAccs);
+        });
+
+        it(`add multiple accessors to orig path ${origPath}`, function () {
+            let newPath = JsonPath.fromPath(origPath).resolve("friends", 3);
+
+            let expAccs = [...origPathAccs, "friends", 3];
             console.log("accessors", newPath.accessors);
             assert.deepEqual(newPath.accessors, expAccs);
         });
@@ -54,17 +78,17 @@ describe("JsonPath test", function () {
 
     describe("create path from existing path", function() {
         let origPathAccs = ["authors", "0"];
-        let origPath = JsonPath.get(origPathAccs);
+        let origPath = JsonPath.fromArr(origPathAccs);
 
         it(`from original path ${origPath}`, function () {
-            let newPath = JsonPath.get(origPath);
+            let newPath = JsonPath.fromPath(origPath);
             console.log("accessors", newPath.accessors);
             assert.deepEqual(newPath.accessors, origPathAccs);
         });
     });
 
     describe("get parent from existing path", function() {
-        let origPath = JsonPath.get("authors", "0", "firstName");
+        let origPath = JsonPath.fromArr("authors", "0", "firstName");
 
         it (`get parent from ${origPath}`, function() {
             let newPath = origPath.parent;
@@ -92,7 +116,7 @@ describe("JsonPath test", function () {
     });
 
     describe("get name from path", function() {
-        let path = JsonPath.get("authors", 0, "firstName");
+        let path = JsonPath.fromArr("authors", 0, "firstName");
         it(`get name from ${path}`, function () {
             assert.equal("firstName", path.name);
         });

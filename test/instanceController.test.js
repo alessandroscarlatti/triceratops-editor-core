@@ -1,6 +1,6 @@
 const assert = require("assert");
 const InstanceControllerContext = require("../src/editor/core/controller/InstanceControllerContext").default;
-const JsonPath = require("../src/editor/core/util/JsonPath").JsonPath;
+const JsonPath = require("../src/editor/core/attempt3/JsonPath").JsonPath;
 
 suite("test instance controller methods", function () {
 

@@ -1,5 +1,5 @@
 const assert = require("assert");
-const JsonPathParser = require("../src/editor/core/util/JsonPathParser").JsonPathParser;
+const JsonPathParser = require("./TriceratopsPathParser").JsonPathParser;
 
 describe("get parent path util returns parent path", function () {
     describe("valid paths", function() {

@@ -3,8 +3,8 @@
  * including mutations to that field.
  */
 
-const JsonPathParser = require("../util/JsonPathParser").JsonPathParser;
-const JsonPath = require("../util/JsonPath").JsonPath;
+const JsonPathParser = require("../attempt3/JsonPathParser").JsonPathParser;
+const JsonPath = require("../attempt3/JsonPath").JsonPath;
 
 
 // TODO working on getting the instance controller filled with methods...

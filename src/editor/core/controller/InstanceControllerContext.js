@@ -1,5 +1,5 @@
 const InstanceController = require("./InstanceController").default;
-const JsonPath = require("../util/JsonPath").JsonPath;
+const JsonPath = require("../attempt3/JsonPath").JsonPath;
 
 class InstanceControllerContext {
     constructor() {

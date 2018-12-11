@@ -1,4 +1,4 @@
-const JsonPathParser = require("../util/JsonPathParser").JsonPathParser;
+const JsonPathParser = require("../attempt3/JsonPathParser").JsonPathParser;
 
 /**
  * Utilities

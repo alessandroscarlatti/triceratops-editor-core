@@ -210,9 +210,14 @@ class TriceratopsInstance {
     }
 
     deleteNodeByPath(trcPath) {
-        let trcNode = this.getInstanceByPath(trcPath);
+        let id = this.getIdForPath(trcPath);
+        this.deleteNodeById(id);
+    }
 
-        if (trcPath.accessors.length === 0) {
+    deleteNodeById(id) {
+        let trcNode = this._instances[id];
+
+        if (trcNode.parent == null) {
             // this is the root node.
             // just delete everything!
             this._jsInstance = undefined;

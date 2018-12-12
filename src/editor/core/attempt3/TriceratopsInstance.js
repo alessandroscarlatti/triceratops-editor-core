@@ -30,17 +30,13 @@ class TriceratopsInstance {
         this._instanceIdCounter = -1;
     }
 
-    _getNextId() {
-        this._instanceIdCounter++;
-        return "id" + this._instanceIdCounter;
-    }
-
     _getNewInstanceIdForPath(trcPath) {
         if (trcPath.accessors.length === 0) {
             return "$";
         }
         else {
-            return this._getNextId();
+            this._instanceIdCounter++;
+            return "id" + this._instanceIdCounter;
         }
     }
 
@@ -173,7 +169,7 @@ class TriceratopsInstance {
     _createValueNodeByPath(trcPath, value) {
         // create a new value node
         // create a new id
-        let id = this._getNextId();
+        let id = this._getNewInstanceIdForPath(trcPath);
         let parentId = this._getParentIdOrNull(trcPath);
         let newJsInstance = value;
         this._createChildInstance(parentId, trcPath.name, value);
@@ -211,6 +207,67 @@ class TriceratopsInstance {
             let parentJsInstance = this._instances[parentId].instance;
             parentJsInstance[childAccessor] = childInstance;
         }
+    }
+
+    deleteNodeByPath(trcPath) {
+        let trcNode = this.getInstanceByPath(trcPath);
+
+        if (trcPath.accessors.length === 0) {
+            // this is the root node.
+            // just delete everything!
+            this._jsInstance = undefined;
+            this._instances = {};
+        } else {
+            this._deleteNodeRecursive(trcNode);
+        }
+    }
+
+    _deleteNodeRecursive(trcNode) {
+        // delete all the children, then delete this thing from its parent.
+
+        let children = trcNode.children;
+        for (let accessor in children) {
+            if (children.hasOwnProperty(accessor)) {
+                let childId = children[accessor];
+                this._deleteNodeRecursive(this._instances[childId]);
+            }
+        }
+
+        // finally delete this thing from its parent
+        let parentId = trcNode.parent;
+        let parentJsInstance = this._instances[parentId].instance;
+        let parentTrcInstance = this._instances[parentId];
+        let parentsChildren = parentTrcInstance.children;
+        if (parentsChildren.constructor.name === "Object") {
+            // the node being deleted is part of an object.
+            // It is safe to just delete the field.
+            delete parentsChildren[trcNode.accessor];
+            delete parentJsInstance[trcNode.accessor];
+        }
+        else if (parentsChildren.constructor.name === "Array") {
+            // the node being deleted is part of an array.
+            // so we need to splice the child fields array
+            // to safely remove that child id while preserving the ability to iterate the array.
+            // (delete the 1 element at the index represented by the accessor for this node being deleted.)
+            parentsChildren.splice(trcNode.accessor, 1);
+
+            // we also need to decrement the accessors for the instances
+            // right of the index just removed.
+
+            // what if the array is now empty?
+            for (let i = trcNode.accessor; i < parentTrcInstance.children.length; i++) {
+                let childId = parentTrcInstance.children[i];
+                let childInstance = this._instances[childId];
+                childInstance.accessor--;
+            }
+
+        } else {
+            throw new Error("Unrecognized constructor for child fields " + parentsChildren.constructor.name);
+        }
+
+        // finally delete this instance from the master map.
+        delete this._instances[trcNode.id];
+
     }
 }
 

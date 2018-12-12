@@ -102,6 +102,37 @@ describe("TriceratopsInstance", () => {
 
         assert.equal(updatedFriends1Node.instance, "Annie2");
         assert.equal(trc.jsInstance.friends[1], "Annie2");
+    });
 
+    it ("delete a value node", () => {
+        let trc = new TriceratopsInstance();
+
+        let rootNode = trc.createObjectNodeByPath(TriceratopsPath.fromStr("$"));
+        let nameNode = trc.createValueNodeByPath(TriceratopsPath.fromStr("$[name]"), "Phil");
+        let friendsNode = trc.createArrayNodeByPath(TriceratopsPath.fromStr("$[friends]"));
+        let friends0Node = trc.createValueNodeByPath(TriceratopsPath.fromStr("$[friends][0]"), "Charlotte");
+        let friends1Node = trc.createValueNodeByPath(TriceratopsPath.fromStr("$[friends][1]"), "Annie");
+        let friends2Node = trc.createValueNodeByPath(TriceratopsPath.fromStr("$[friends][2]"), "Squash");
+
+        trc.deleteNodeByPath(TriceratopsPath.fromStr("$[name]"));
+        assert(!trc.exists(TriceratopsPath.fromStr("$[name]")));
+        assert.equal(Object.keys(rootNode.children).length, 1);
+        assert.equal(rootNode.children["name"], undefined);
+
+        trc.deleteNodeByPath(TriceratopsPath.fromStr("$[friends][1]"));
+        assert(!trc.exists(TriceratopsPath.fromStr("$[friends][2]")));
+        assert.equal(friendsNode.children.length, 2);
+        assert.equal(friendsNode.children[1], friends2Node.id);
+    });
+
+    it ("delete the root node", () => {
+        let trc = new TriceratopsInstance();
+
+        let rootNode = trc.createObjectNodeByPath(TriceratopsPath.fromStr("$"));
+        let nameNode = trc.createValueNodeByPath(TriceratopsPath.fromStr("$[name]"), "Phil");
+
+        trc.deleteNodeByPath(TriceratopsPath.fromStr("$"));
+
+        assert.equal(trc.jsInstance, undefined);
     });
 });

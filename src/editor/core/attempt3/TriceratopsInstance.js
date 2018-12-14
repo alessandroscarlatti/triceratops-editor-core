@@ -1,5 +1,3 @@
-const TriceratopsPath = require("./TriceratopsPath").default;
-
 /**
  * this probably best accompanies a transition
  * in nomenclature from "instance" describing the triceratops instance.
@@ -238,41 +236,70 @@ class TriceratopsInstance {
             }
         }
 
+        this._hardDeleteNode(trcNode);
+    }
+
+    _hardDeleteNode(trcNode) {
         // finally delete this thing from its parent
+        // this is a sophisticated process that includes cleaning up
+        // dangling refs from the parent triceratops node.
         let parentId = trcNode.parent;
         let parentJsInstance = this._instances[parentId].instance;
         let parentTrcInstance = this._instances[parentId];
         let parentsChildren = parentTrcInstance.children;
+
+        // cleanup refs to this node from the parent triceratops node.
         if (parentsChildren.constructor.name === "Object") {
-            // the node being deleted is part of an object.
-            // It is safe to just delete the field.
-            delete parentsChildren[trcNode.accessor];
-            delete parentJsInstance[trcNode.accessor];
+            this._cleanupParentRefsInParentObject(trcNode, parentTrcInstance);
         }
         else if (parentsChildren.constructor.name === "Array") {
-            // the node being deleted is part of an array.
-            // so we need to splice the child fields array
-            // to safely remove that child id while preserving the ability to iterate the array.
-            // (delete the 1 element at the index represented by the accessor for this node being deleted.)
-            parentsChildren.splice(trcNode.accessor, 1);
-
-            // we also need to decrement the accessors for the instances
-            // right of the index just removed.
-
-            // what if the array is now empty?
-            for (let i = trcNode.accessor; i < parentTrcInstance.children.length; i++) {
-                let childId = parentTrcInstance.children[i];
-                let childInstance = this._instances[childId];
-                childInstance.accessor--;
-            }
-
+            this._cleanupParentRefsInParentArray(trcNode, parentTrcInstance);
         } else {
             throw new Error("Unrecognized constructor for child fields " + parentsChildren.constructor.name);
         }
 
+        // remove the node from the actual JS instance
+        delete parentJsInstance[trcNode.accessor];
+
         // finally delete this instance from the master map.
         delete this._instances[trcNode.id];
+    }
 
+    /**
+     * the node being deleted is part of an object.
+     * It is safe to just delete the field.
+     * @param trcNode
+     * @private
+     * @param parentTrcNode
+     */
+    _cleanupParentRefsInParentObject(trcNode, parentTrcNode) {
+        // remove the triceratops node from the map.
+        delete parentTrcNode.children[trcNode.accessor];
+    }
+
+    /**
+     * the node being deleted is part of an array.
+     * so we need to splice the child fields array
+     * to safely remove that child id while preserving the ability to iterate the array.
+     * (delete the 1 element at the index represented by the accessor for this node being deleted.)
+     *
+     * that might also help implement readability once I implement reverse delete.
+     * though technically, I should be able to calculate the exact reverse command.
+     * @private
+     */
+    _cleanupParentRefsInParentArray(trcNode, parentTrcNode) {
+        let parentsChildren = parentTrcNode.children;
+        parentsChildren.splice(trcNode.accessor, 1);
+
+        // we also need to decrement the accessors for the instances
+        // right of the index just removed.
+
+        // what if the array is now empty?
+        for (let i = trcNode.accessor; i < parentTrcNode.children.length; i++) {
+            let childId = parentTrcNode.children[i];
+            let childInstance = this._instances[childId];
+            childInstance.accessor--;
+        }
     }
 }
 
